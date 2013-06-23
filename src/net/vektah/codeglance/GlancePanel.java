@@ -24,7 +24,6 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
     private Editor editor;
     GlanceFileRender render;
     private Logger logger = Logger.getInstance(getClass());
-    private Scale scale = new Scale(1);
 
     public GlancePanel(Project project, FileEditor fileEditor) {
         this.project = project;
@@ -35,7 +34,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
         this.setMinimumSize(new Dimension(50, 0));
         this.setSize(new Dimension(50, 0));
         setPreferredSize(new Dimension(200, 200));
-        render = new GlanceFileRender(project, editor, scale);
+        render = new GlanceFileRender(project, editor);
     }
 
     @Override
@@ -52,23 +51,22 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
         // Draw the image and scale it to stretch vertically.
         g.drawImage(img,                                                    // source image
-                0, 0, img.getWidth(), getHeight(),                          // destination location
+                0, 0, img.getWidth(), img.getHeight(),                          // destination location
                 0, 0, img.getWidth(), editor.getDocument().getLineCount(),  // source location
                 null);                                                      // observer
-        scale.setVScale(getHeight() / (float)editor.getDocument().getLineCount());
 
         // Draw the editor visible area
         Rectangle visible = render.getRenderAreaInChars();
         g.setColor(Color.GRAY);
 
-        int width = scale.charXToPointX(visible.x + visible.width) - scale.charXToPointX(visible.x);
-        int height = scale.charYtoPointY(visible.y + visible.height) - scale.charYtoPointY(visible.y);
-        g.drawRect(scale.charXToPointX(visible.x), scale.charYtoPointY(visible.y), width, height);
+        int width = visible.x + visible.width - visible.x;
+        int height = visible.y + visible.height - visible.y;
+        g.drawRect(visible.x, visible.y, width, height);
     }
 
     @Override
     public void visibleAreaChanged(VisibleAreaEvent visibleAreaEvent) {
-        this.setPreferredSize(new Dimension(scale.charXToPointX(render.getRenderAreaInChars().width), 0));
+        this.setPreferredSize(new Dimension(render.getRenderAreaInChars().width, 0));
         this.revalidate();
         this.repaint();
     }

@@ -11,9 +11,11 @@ import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.ui.JBColor;
 import com.intellij.util.ui.UIUtil;
 
 import java.awt.*;
@@ -30,13 +32,11 @@ public class GlanceFileRender {
     private BufferedImage img;
     private Project project;
     private Editor editor;
-    private Scale scale;
     private Logger logger = Logger.getInstance(getClass());
 
-    public GlanceFileRender(Project project, Editor editor, Scale scale) {
+    public GlanceFileRender(Project project, Editor editor) {
         this.project = project;
         this.editor = editor;
-        this.scale = scale;
         updateImage();
 
         editor.getDocument().addDocumentListener(new DocumentListener() {
@@ -78,15 +78,21 @@ public class GlanceFileRender {
     public void updateImage() {
         int line_count = editor.getDocument().getLineCount();
         int longest_line = getLongestLine();
+	    Color attribute_color;
+	    int color;
+	    int charColor;
+	    int bgcolor = editor.getColorsScheme().getDefaultBackground().getRGB();
+	    float weight;
+
+	    Document document = editor.getDocument();
+	    String text = document.getText();
 
         if (img == null || img.getWidth() < longest_line || img.getHeight() < line_count) {
-            img = UIUtil.createImage(longest_line + 64, editor.getDocument().getLineCount() + 64, BufferedImage.TYPE_INT_ARGB);
+            img = UIUtil.createImage(longest_line, editor.getDocument().getLineCount(), BufferedImage.TYPE_INT_ARGB);
             logger.info("Created new image");
         }
 
-        Graphics g = img.getGraphics();
-        int x1, x2, line, lineoffset;
-        Document document = editor.getDocument();
+        int line, lineoffset;
 
         PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
 
@@ -104,22 +110,46 @@ public class GlanceFileRender {
                 break;
             }
 
-            g.setColor(editor.getColorsScheme().getDefaultForeground());
+	        color = editor.getColorsScheme().getDefaultForeground().getRGB();
             TextAttributesKey[] attributes = hl.getTokenHighlights(tokenType);
             for(TextAttributesKey attribute : attributes) {
-                g.setColor(attribute.getDefaultAttributes().getForegroundColor());
+	            attribute_color = attribute.getDefaultAttributes().getForegroundColor();
+	            if(attribute_color != null) color = attribute_color.getRGB();
             }
 
-            line = document.getLineNumber(lexer.getTokenStart());
-            lineoffset = document.getLineStartOffset(line);
-            x1 = scale.charXToPointX(lexer.getTokenStart() - lineoffset);
-            x2 = scale.charXToPointX(lexer.getTokenEnd() - lineoffset);
+	        logger.warn(tokenType.toString());
 
-            g.drawLine(x1, line, x2, line);
+	        for(int i = lexer.getTokenStart(); i < lexer.getTokenEnd(); i++) {
+		        weight = CharacterWeight.getWeight(text.charAt(i));
+		        if(weight == 0) continue;
+
+		        charColor = mix(color, bgcolor, weight);
+
+		        line = document.getLineNumber(i);
+		        lineoffset = document.getLineStartOffset(line);
+
+		        img.setRGB(i - lineoffset, line, charColor);
+	        }
 
             lexer.advance();
         }
     }
+
+	private int mix(int a, int b, float alpha) {
+		int aR = a & 0xFF0000 >> 16;
+		int aG = a & 0x00FF00 >> 8;
+		int aB = a & 0x0000FF;
+
+		int bR = b & 0xFF0000 >> 16;
+		int bG = b & 0x00FF00 >> 8;
+		int bB = b & 0x0000FF;
+
+		int cR = (int) (aR * alpha + bR * (1 - alpha));
+		int cB = (int) (aB * alpha + bB * (1 - alpha));
+		int cG = (int) (aG * alpha + bG * (1 - alpha));
+
+		return 0xFF000000 | (cR << 16) | (cB << 8) | cG;
+	}
 
     public BufferedImage getImg() {
         return img;

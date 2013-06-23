@@ -1,0 +1,19 @@
+<idea-plugin version="2">
+  <id>net.vektah.codeglance</id>
+  <name>CodeGlance</name>
+  <version>0.2</version>
+  <vendor email="adam@vektah.net" url="vektah.net">Adam</vendor>
+
+  <description><![CDATA[
+      Provides a small outline of your code that is useable as a scroll bar.
+      ]]></description>
+
+  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="107.105"/>
+
+  <depends>com.intellij.modules.lang</depends>
+
+  <project-components>
+      <component><implementation-class>net.vektah.codeglance.CodeGlancePlugin</implementation-class></component>
+  </project-components>
+</idea-plugin>

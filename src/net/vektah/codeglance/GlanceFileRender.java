@@ -111,6 +111,12 @@ public class GlanceFileRender {
 			logger.info("Created new image");
 		}
 
+
+		Graphics g = img.getGraphics();
+		g.setColor(editor.getColorsScheme().getDefaultBackground());
+		g.fillRect(0, 0, img.getWidth(), img.getHeight());
+		g.dispose();
+
 		int line, lineoffset;
 
 		PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
@@ -133,11 +139,9 @@ public class GlanceFileRender {
 			color = editor.getColorsScheme().getDefaultForeground().getRGB();
 			TextAttributesKey[] attributes = hl.getTokenHighlights(tokenType);
 			for(TextAttributesKey attribute : attributes) {
-				attribute_color = attribute.getDefaultAttributes().getForegroundColor();
+				attribute_color = editor.getColorsScheme().getAttributes(attribute).getForegroundColor();
 				if(attribute_color != null) color = attribute_color.getRGB();
 			}
-
-			logger.warn(tokenType.toString());
 
 			for(int i = lexer.getTokenStart(); i < lexer.getTokenEnd(); i++) {
 				weight = CharacterWeight.getWeight(text.charAt(i));
@@ -145,10 +149,15 @@ public class GlanceFileRender {
 
 				charColor = mix(color, bgcolor, weight);
 
-				logger.warn(String.format("a:%x, b:%x, c:%x", color, bgcolor, charColor));
-
 				line = document.getLineNumber(i);
 				lineoffset = document.getLineStartOffset(line);
+
+				// Look for tabs, and add four spaces to offset when one is encountered.
+				for(int j = lineoffset; j < i; j++) {
+					if(text.charAt(j) == '\t') {
+						lineoffset-=4;
+					}
+				}
 
 				img.setRGB(i - lineoffset, line, charColor);
 			}

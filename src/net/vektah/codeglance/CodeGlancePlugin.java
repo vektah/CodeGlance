@@ -43,8 +43,6 @@ public class CodeGlancePlugin implements ProjectComponent {
 		logger.warn("Constructed");
 	}
 
-
-
 	public void initComponent() {
 		project.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new EditorPanelInjector(project));
 		logger.warn("init");

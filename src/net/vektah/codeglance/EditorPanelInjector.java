@@ -52,7 +52,7 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 		if(component instanceof JPanel) {
 			JPanel impl = (JPanel)component;
 			if(impl.getLayout() instanceof BorderLayout) {
-				GlancePanel panel = new GlancePanel(project, fileEditorManager.getSelectedEditor(virtualFile));
+				GlancePanel panel = new GlancePanel(project, fileEditorManager.getSelectedEditor(virtualFile), impl);
 				impl.add(panel, BorderLayout.LINE_END);;
 				logger.warn("Injected a new editor panel!");
 			} else {

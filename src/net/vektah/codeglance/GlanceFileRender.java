@@ -116,6 +116,7 @@ public class GlanceFileRender {
 		PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
 
 		SyntaxHighlighter hl = SyntaxHighlighterFactory.getSyntaxHighlighter(file.getLanguage(), project, file.getVirtualFile());
+
 		Lexer lexer = hl.getHighlightingLexer();
 
 		Logger logger = Logger.getInstance(getClass());
@@ -142,14 +143,14 @@ public class GlanceFileRender {
 				weight = CharacterWeight.getWeight(text.charAt(i));
 				if(weight == 0) continue;
 
-//				charColor = mix(color, bgcolor, weight);
+				charColor = mix(color, bgcolor, weight);
 
-				logger.warn(String.format("%x", color));
+				logger.warn(String.format("a:%x, b:%x, c:%x", color, bgcolor, charColor));
 
 				line = document.getLineNumber(i);
 				lineoffset = document.getLineStartOffset(line);
 
-				img.setRGB(i - lineoffset, line, color);
+				img.setRGB(i - lineoffset, line, charColor);
 			}
 
 			lexer.advance();
@@ -158,19 +159,19 @@ public class GlanceFileRender {
 
 	// TODO: need a better mix function.
 	private int mix(int a, int b, float alpha) {
-		int aR = a & 0xFF0000 >> 16;
-		int aG = a & 0x00FF00 >> 8;
-		int aB = a & 0x0000FF;
+		float aR = (a & 0xFF0000) >> 16;
+		float aG = (a & 0x00FF00) >> 8;
+		float aB = (a & 0x0000FF);
 
-		int bR = b & 0xFF0000 >> 16;
-		int bG = b & 0x00FF00 >> 8;
-		int bB = b & 0x0000FF;
+		float bR = (b & 0xFF0000) >> 16;
+		float bG = (b & 0x00FF00) >> 8;
+		float bB = (b & 0x0000FF);
 
 		int cR = (int) (aR * alpha + bR * (1 - alpha));
-		int cB = (int) (aB * alpha + bB * (1 - alpha));
 		int cG = (int) (aG * alpha + bG * (1 - alpha));
+		int cB = (int) (aB * alpha + bB * (1 - alpha));
 
-		return 0xFF000000 | (cR << 16) | (cB << 8) | cG;
+		return 0xFF000000 | (cR << 16) | (cG << 8) | cB;
 	}
 
 	public BufferedImage getImg() {

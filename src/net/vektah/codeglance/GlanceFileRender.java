@@ -84,10 +84,19 @@ public class GlanceFileRender {
 
 	public int getLongestLine() {
 		int max = 0;
+		int len = 0;
+		String text = editor.getDocument().getText();
 		for(int i = 0; i < editor.getDocument().getLineCount(); i++) {
-			int length = editor.getDocument().getLineEndOffset(i) - editor.getDocument().getLineStartOffset(i);
-			if (length > max) {
-				max = length;
+			for(int j = editor.getDocument().getLineStartOffset(i); j < editor.getDocument().getLineEndOffset(i); j++) {
+				if(text.charAt(j) == '\t') {
+					len += 4;
+				} else {
+					len += 1;
+				}
+			}
+
+			if (len > max) {
+				max = len;
 			}
 		}
 
@@ -100,6 +109,7 @@ public class GlanceFileRender {
 		Color attribute_color;
 		int color;
 		int charColor;
+		int offset;
 		int bgcolor = editor.getColorsScheme().getDefaultBackground().getRGB();
 		float weight;
 
@@ -151,15 +161,16 @@ public class GlanceFileRender {
 
 				line = document.getLineNumber(i);
 				lineoffset = document.getLineStartOffset(line);
+				offset = i - lineoffset;
 
 				// Look for tabs, and add four spaces to offset when one is encountered.
 				for(int j = lineoffset; j < i; j++) {
 					if(text.charAt(j) == '\t') {
-						lineoffset-=4;
+						offset += 3;
 					}
 				}
 
-				img.setRGB(i - lineoffset, line, charColor);
+				img.setRGB(offset, line, charColor);
 			}
 
 			lexer.advance();

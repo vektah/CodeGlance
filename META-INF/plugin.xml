@@ -1,11 +1,11 @@
 <idea-plugin version="2">
   <id>net.vektah.codeglance</id>
   <name>CodeGlance</name>
-  <version>0.2</version>
+  <version>0.3</version>
   <vendor email="adam@vektah.net" url="vektah.net">Adam</vendor>
 
   <description><![CDATA[
-      Provides a small outline of your code that is useable as a scroll bar.
+      Embedds a code mini-map similar to the one found in Sublime into the editor pane.
       ]]></description>
 
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->

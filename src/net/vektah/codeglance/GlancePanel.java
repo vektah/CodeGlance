@@ -137,7 +137,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 			offset = (int) ((minimaps[activeBuffer].height - getHeight()) * percentComplete);
 		}
 
-		logger.warn(String.format("Buffer: %d", activeBuffer));
+		logger.debug(String.format("Rendering to buffer: %d", activeBuffer));
 		if(activeBuffer >= 0) {
 			Minimap minimap = minimaps[activeBuffer];
 

@@ -31,6 +31,7 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import net.vektah.codeglance.render.TaskRunner;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,9 +42,11 @@ import java.awt.*;
 public class EditorPanelInjector implements FileEditorManagerListener {
 	private Project project;
 	private Logger logger = Logger.getInstance(getClass());
+	private TaskRunner runner;
 
-	public EditorPanelInjector(Project project) {
+	public EditorPanelInjector(Project project, TaskRunner runner) {
 		this.project = project;
+		this.runner = runner;
 	}
 
 	@Override
@@ -52,9 +55,9 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 		if(component instanceof JPanel) {
 			JPanel impl = (JPanel)component;
 			if(impl.getLayout() instanceof BorderLayout) {
-				GlancePanel panel = new GlancePanel(project, fileEditorManager.getSelectedEditor(virtualFile), impl);
+				GlancePanel panel = new GlancePanel(project, fileEditorManager.getSelectedEditor(virtualFile), impl, runner);
 				impl.add(panel, BorderLayout.LINE_END);;
-				logger.warn("Injected a new editor panel!");
+				logger.debug("Injected a new editor panel!");
 			} else {
 				logger.error("Not a BorderLayout:" .concat (impl.getLayout().getClass().getName()));
 			}

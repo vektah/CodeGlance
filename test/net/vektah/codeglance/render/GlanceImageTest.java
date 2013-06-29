@@ -23,7 +23,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.vektah.codeglance;
+package net.vektah.codeglance.render;
 
 import net.vektah.codeglance.render.Minimap;
 import org.testng.annotations.DataProvider;
@@ -74,16 +74,16 @@ public class GlanceImageTest {
 
 	@DataProvider(name="Test-Newlines") public static Object[][] testNewlines() {
 		return new Object[][] {
-//			{"", 0, 1, 0, 0},
-//			{"1111111111\n2222222222", 0, 1, 0, 10},        // First line
-//			{"1111111111\n2222222222", 5, 1, 0, 10},        // First line
-//			{"1111111111\n2222222222", 10, 1, 0, 10},       // The newline itself
-//			{"1111111111\n2222222222", 15, 2, 11, 20},       // The next line, no trailing new line
-//			{"1111111111\n2222222222\n", 15, 2, 11, 21},       // The next line with trailing newline.
-//			{"1111111111\n2222222222\n3333333333", 15, 2, 11, 21},   // Middle
-//			{"111 111 11\n222 222 22\n333 333 33", 25, 3, 22, 31},   // End of line, but truncated to a valid char (no trailing newline)
-//			{"\n\n\n\n", 0, 1, 0, 0},
-//			{"\n\n\n\n", 1, 2, 1, 1},
+			{"", 0, 1, 0, 0},
+			{"1111111111\n2222222222", 0, 1, 0, 10},        // First line
+			{"1111111111\n2222222222", 5, 1, 0, 10},        // First line
+			{"1111111111\n2222222222", 10, 1, 0, 10},       // The newline itself
+			{"1111111111\n2222222222", 15, 2, 11, 20},       // The next line, no trailing new line
+			{"1111111111\n2222222222\n", 15, 2, 11, 21},       // The next line with trailing newline.
+			{"1111111111\n2222222222\n3333333333", 15, 2, 11, 21},   // Middle
+			{"111 111 11\n222 222 22\n333 333 33", 25, 3, 22, 31},   // End of line, but truncated to a valid char (no trailing newline)
+			{"\n\n\n\n", 0, 1, 0, 0},
+			{"\n\n\n\n", 1, 2, 1, 1},
 			{"\n\n\n\n", 2, 3, 2, 2},
 			{"\n\n\n\n", 3, 4, 3, 3},
 

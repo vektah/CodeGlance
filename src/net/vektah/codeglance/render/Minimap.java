@@ -182,7 +182,9 @@ public class Minimap {
 					}
 				}
 
-				img.setRGB(offset, line.number, charColor);
+				if(0 <= offset && offset < img.getWidth() && 0 <= line.number && line.number <= img.getHeight()) {
+					img.setRGB(offset, line.number, charColor);
+				}
 			}
 
 			lexer.advance();

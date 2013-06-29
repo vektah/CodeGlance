@@ -23,49 +23,29 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.vektah.codeglance;
+package net.vektah.codeglance.render;
 
-import com.intellij.openapi.components.ProjectComponent;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileEditorManagerListener;
-import com.intellij.openapi.project.Project;
-import net.vektah.codeglance.render.TaskRunner;
-import org.jetbrains.annotations.NotNull;
+import org.testng.annotations.Test;
 
-/**
- * Main plugin
- */
-public class CodeGlancePlugin implements ProjectComponent {
-	private Project project;
-	private Logger logger = Logger.getInstance(getClass());
-	private TaskRunner runner = new TaskRunner();
-	private Thread runnerThread = new Thread(runner);
+import static org.mockito.Mockito.*;
 
-	public CodeGlancePlugin(Project project) {
-		this.project = project;
-		logger.warn("Constructed");
-	}
+public class TaskRunnerTest {
+	@Test public void testTimerTask() {
+		TaskRunner runner = new TaskRunner();
+		new Thread(runner).start();
 
-	public void initComponent() {
-		runnerThread.start();
-		project.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new EditorPanelInjector(project, runner));
-		logger.warn("init");
-	}
+		Runnable task = mock(Runnable.class);
 
-	public void disposeComponent() {
+		runner.add(task);
+
+		try {
+			Thread.currentThread().sleep(50);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 		runner.stop();
-	}
 
-	@NotNull
-	public String getComponentName() {
-		return "CodeGlancePlugin";
-	}
-
-	public void projectOpened() {
-		// called when project is opened
-	}
-
-	public void projectClosed() {
-		// called when project is being closed
+		verify(task).run();
 	}
 }

@@ -32,7 +32,6 @@ import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.ui.UIUtil;
-import net.vektah.codeglance.CharacterWeight;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -87,7 +86,7 @@ public class Minimap {
 		if(line_length > longest_line) longest_line = line_length;
 
 		width = longest_line;
-		height = lines;
+		height = lines * 2;     // Two pixels per line
 
 		// If the image is too small to represent the entire document now then regenerate it
 		// TODO: Copy old image when incremental update is added.
@@ -141,10 +140,12 @@ public class Minimap {
 		Color attribute_color;
 		int color;
 		int charColor;
+		int charColor2;
 		int offset;
 		int bgcolor = colorScheme.getDefaultBackground().getRGB();
 		LineInfo line;
 		float weight;
+		int y;
 		Lexer lexer = hl.getHighlightingLexer();
 		IElementType tokenType;
 
@@ -170,8 +171,6 @@ public class Minimap {
 				weight = CharacterWeight.getWeight(text.charAt(i));
 				if(weight == 0) continue;
 
-				charColor = mix(color, bgcolor, weight);
-
 				line = get_line(i);
 				offset = i - line.begin;
 
@@ -182,8 +181,11 @@ public class Minimap {
 					}
 				}
 
-				if(0 <= offset && offset < img.getWidth() && 0 <= line.number && line.number <= img.getHeight()) {
-					img.setRGB(offset, line.number, charColor);
+				y = line.number * 2;
+
+				if(0 <= offset && offset < img.getWidth() && 0 <= y && y <= img.getHeight()) {
+					img.setRGB(offset, y, mix(color, bgcolor, weight * 0.3f));
+					img.setRGB(offset, y + 1, mix(color, bgcolor, weight));
 				}
 			}
 
@@ -200,6 +202,9 @@ public class Minimap {
 	 * @return Mixed color
 	 */
 	private int mix(int a, int b, float alpha) {
+		if(alpha > 1) alpha = a;
+		if(alpha < 0) alpha = 0;
+
 		float aR = (a & 0xFF0000) >> 16;
 		float aG = (a & 0x00FF00) >> 8;
 		float aB = (a & 0x0000FF);

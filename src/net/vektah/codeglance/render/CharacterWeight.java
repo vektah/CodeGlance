@@ -23,22 +23,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.vektah.codeglance;
+package net.vektah.codeglance.render;
+
+import java.util.Random;
 
 /**
  * Works out a weight for each character from 0-1, 1 being fairly opaque (lets say, like an M), 0 being totally transparent.
  */
 public class CharacterWeight {
+	private static Random random = new Random();
+
 	public static float getWeight(char c) {
 		// Whitespace and non printing characters are totally transparent.
 		if(c <= 32) return 0;
 
 		// Uppercase gets heaviest weighting
-		if('A' <= c && c <= 'Z') return 1;
+		if('A' <= c && c <= 'Z') return 0.6f + random.nextFloat() * 0.4f;
 
 		// Numbers and lowercase all get slightly less
-		if('a' <= c && c <= 'z') return 0.95f;
-		if('0' <= c && c <= '9') return 0.95f;
+		if('a' <= c && c <= 'z') return 0.5f + random.nextFloat() * 0.4f;
+		if('0' <= c && c <= '9') return 0.5f + random.nextFloat() * 0.4f;
 
 		// Now we are down to some special cases.
 		switch(c) {

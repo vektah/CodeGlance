@@ -103,15 +103,13 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
 		SyntaxHighlighter hl = SyntaxHighlighterFactory.getSyntaxHighlighter(file.getLanguage(), project, file.getVirtualFile());
 
-		synchronized(nextBuffer) {
-			nextBuffer = activeBuffer == 0 ? 1 : 0;
+		nextBuffer = activeBuffer == 0 ? 1 : 0;
 
-			runner.add(new RenderTask(minimaps[nextBuffer], editor.getDocument().getText(), editor.getColorsScheme(), hl, new Runnable() {
-				@Override public void run() {
-					updateComplete();
-				}
-			}));
-		}
+		runner.add(new RenderTask(minimaps[nextBuffer], editor.getDocument().getText(), editor.getColorsScheme(), hl, new Runnable() {
+			@Override public void run() {
+				updateComplete();
+			}
+		}));
 	}
 
 	private void updateComplete() {
@@ -119,11 +117,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 			updatePending = false;
 		}
 
-		synchronized (activeBuffer) {
-			synchronized (nextBuffer) {
-				activeBuffer = nextBuffer;
-			}
-		}
+		activeBuffer = nextBuffer;
 
 		repaint();
 	}
@@ -136,25 +130,24 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		int offset = 0;
 
 		// If the panel is 1:1 then just draw everything in the top left hand corner, otherwise we need to gracefully scroll.
-		if(editor.getDocument().getLineCount() > getHeight()) {
+		if(minimaps[activeBuffer].height > getHeight()) {
 			// Scroll the minimap vertically by the amount that would be off screen scaled to how far through the document we are.
 			int position = editor.xyToLogicalPosition(new Point(0, (int) editor.getScrollingModel().getVisibleArea().getMaxY())).line;
 			float percentComplete = position / (float)editor.getDocument().getLineCount();
-			offset = (int) ((editor.getDocument().getLineCount() - getHeight()) * percentComplete);
+			offset = (int) ((minimaps[activeBuffer].height - getHeight()) * percentComplete);
 		}
 
-		synchronized (activeBuffer) {
-			logger.warn(String.format("Buffer: %d", activeBuffer));
-			if(activeBuffer >= 0) {
-				Minimap minimap = minimaps[activeBuffer];
+		logger.warn(String.format("Buffer: %d", activeBuffer));
+		if(activeBuffer >= 0) {
+			Minimap minimap = minimaps[activeBuffer];
 
-				// Draw the image and scale it to stretch vertically.
-				g.drawImage(minimap.img,                                                    // source image
-						0, 0,     minimap.width, getHeight(),  // destination location
-						0, offset, minimap.width, offset + getHeight(),              // source location
-						null);                                                      // observer
-			}
+			// Draw the image and scale it to stretch vertically.
+			g.drawImage(minimap.img,                                                    // source image
+					0, 0,     minimap.width, getHeight(),  // destination location
+					0, offset, minimap.width, offset + getHeight(),              // source location
+					null);                                                      // observer
 		}
+
 		// Draw the editor visible area
 		Rectangle visible = getRenderAreaInChars();
 		g.setColor(Color.GRAY);
@@ -169,7 +162,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		LogicalPosition top_left = editor.xyToLogicalPosition(new Point(visible.x, visible.y));
 		LogicalPosition bottom_right = editor.xyToLogicalPosition(new Point(visible.x + visible.width, visible.y + visible.height));
 
-		return new Rectangle(top_left.column, top_left.line, bottom_right.column - top_left.column, bottom_right.line - top_left.line);
+		return new Rectangle(top_left.column, top_left.line * 2, bottom_right.column - top_left.column, (bottom_right.line - top_left.line) * 2);
 	}
 
 	@Override public void visibleAreaChanged(VisibleAreaEvent visibleAreaEvent) {
@@ -184,11 +177,11 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		if(y > getHeight()) y = getHeight();
 
 		// If the panel is 1:1 then mapping straight to the line that was selected is a good way to go.
-		if(editor.getDocument().getLineCount() < getHeight()) {
-			return new LogicalPosition(y, x);
+		if(minimaps[activeBuffer].height < getHeight()) {
+			return new LogicalPosition(y / 2, x);
 		} else {
 			// Otherwise use the click as the relative position
-			return new LogicalPosition((int) (y / (float)getHeight() * editor.getDocument().getLineCount()), x);
+			return new LogicalPosition((int) (y / (float)getHeight() * minimaps[activeBuffer].height) / 2, x);
 		}
 	}
 

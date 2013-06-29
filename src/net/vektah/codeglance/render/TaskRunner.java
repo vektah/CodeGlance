@@ -9,7 +9,7 @@ import java.util.concurrent.ArrayBlockingQueue;
  */
 public class TaskRunner implements Runnable {
 	private boolean stop = false;
-	private ArrayBlockingQueue<Runnable> taskQueue = new ArrayBlockingQueue<>(10);
+	private ArrayBlockingQueue<Runnable> taskQueue = new ArrayBlockingQueue<Runnable>(10);
 	private Logger logger = Logger.getInstance(getClass());
 
 	public void add(Runnable task) {

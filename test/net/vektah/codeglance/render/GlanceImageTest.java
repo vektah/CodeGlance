@@ -25,7 +25,6 @@
 
 package net.vektah.codeglance.render;
 
-import net.vektah.codeglance.render.Minimap;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -95,7 +94,7 @@ public class GlanceImageTest {
 
 		img.updateDimensions(input);
 
-		Minimap.LineInfo line = img.get_line(i);
+		Minimap.LineInfo line = img.getLine(i);
 
 		assertEquals(expected_number, line.number);
 		assertEquals(expected_begin, line.begin);

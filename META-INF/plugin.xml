@@ -1,19 +1,27 @@
-<idea-plugin version="2">
-  <id>net.vektah.codeglance</id>
-  <name>CodeGlance</name>
-  <version>0.3</version>
-  <vendor email="adam@vektah.net" url="vektah.net">Adam</vendor>
+<idea-plugin url="https://github.com/Vektah/CodeGlance">
+	<id>net.vektah.codeglance</id>
+	<name>CodeGlance</name>
+	<version>1.0</version>
+	<vendor email="adam@vektah.net" url="https://github.com/Vektah/CodeGlance">Vektah</vendor>
 
-  <description><![CDATA[
-      Embedds a code mini-map similar to the one found in Sublime into the editor pane.
-      ]]></description>
+	<description>
+		Embeds a code mini-map similar to the one found in Sublime into the editor pane. Works with both light and dark
+		themes using your customized colors for syntax highlighting.
+	</description>
 
-  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="107.105"/>
+	<change-notes>
+		Initial release of the plugin:
+		 - Worker thread for rendering
+		 - Color rendering using intelij's tokenizer
+		 - Scrollable!
+		 - Embedded into editor window
+	</change-notes>
 
-  <depends>com.intellij.modules.lang</depends>
+	<idea-version since-build="107.105"/>
 
-  <project-components>
-      <component><implementation-class>net.vektah.codeglance.CodeGlancePlugin</implementation-class></component>
-  </project-components>
+	<depends>com.intellij.modules.lang</depends>
+
+	<project-components>
+		<component><implementation-class>net.vektah.codeglance.CodeGlancePlugin</implementation-class></component>
+	</project-components>
 </idea-plugin>

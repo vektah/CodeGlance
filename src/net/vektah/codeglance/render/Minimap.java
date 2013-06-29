@@ -50,7 +50,7 @@ public class Minimap {
 	/**
 	 * Scans over the entire document once to work out the required dimensions then rebuilds the image if nessicary.
 	 *
-	 * Because java chars are UTF-8 16 bit chars this function shold be UTF safe in the 2 byte range, which is all intelij
+	 * Because java chars are UTF-8 16 bit chars this function should be UTF safe in the 2 byte range, which is all intellij
 	 * seems to handle anyway....
 	 */
 	public void updateDimensions(CharSequence text) {
@@ -60,7 +60,7 @@ public class Minimap {
 		char last = 0;
 		char ch;
 
-		line_endings = new ArrayList<>();
+		line_endings = new ArrayList<Integer>();
 		// Magical first line
 		line_endings.add(-1);
 
@@ -92,7 +92,7 @@ public class Minimap {
 		// TODO: Copy old image when incremental update is added.
 		if (img == null || img.getWidth() < width || img.getHeight() < height) {
 			if(img != null) img.flush();
-			// Create an image that is a bit bigger then the one we need so we dont need to re-create it again soon.
+			// Create an image that is a bit bigger then the one we need so we don't need to re-create it again soon.
 			// Documents can get big, so rather then relative sizes lets just add a fixed amount on.
 			img = UIUtil.createImage(width + 100, height + 200, BufferedImage.TYPE_INT_ARGB);
 			logger.debug("Created new image");
@@ -104,7 +104,7 @@ public class Minimap {
 	 * @param i character offset from start of document
 	 * @return 3 element array, [line_number, o]
 	 */
-	public LineInfo get_line(int i) {
+	public LineInfo getLine(int i) {
 		// Dummy entries if there are no lines
 		if(line_endings.size() == 0) return new LineInfo(1, 0, 0);
 		if(line_endings.size() == 1) return new LineInfo(1, 0, 0);
@@ -134,13 +134,18 @@ public class Minimap {
 		}
 	}
 
+	/**
+	 * Update the minimap image
+	 *
+	 * @param text          The entire text of the document to render
+	 * @param colorScheme   The users color scheme
+	 * @param hl            The syntax highlighter to use for the language this document is in.
+	 */
 	public void update(CharSequence text, EditorColorsScheme colorScheme, SyntaxHighlighter hl) {
 		updateDimensions(text);
 
 		Color attribute_color;
 		int color;
-		int charColor;
-		int charColor2;
 		int offset;
 		int bgcolor = colorScheme.getDefaultBackground().getRGB();
 		LineInfo line;
@@ -171,7 +176,7 @@ public class Minimap {
 				weight = CharacterWeight.getWeight(text.charAt(i));
 				if(weight == 0) continue;
 
-				line = get_line(i);
+				line = getLine(i);
 				offset = i - line.begin;
 
 				// Look for tabs, and add four spaces to offset when one is encountered.

@@ -33,12 +33,12 @@ import static junit.framework.Assert.*;
 public class GlanceImageTest {
 	@DataProvider(name="Test-Dimensions") public static Object[][] testDimensions() {
 		return new Object[][] {
-			{"", 1, 1},
-			{"SingleLine", 10, 1},
-			{"Multi\nLine", 5, 2},
-			{"Line with lots of tabs\n\t\t\t\t\t\t\t\t", 8*4, 2},
-			{"ʳʳʳʳ", 4, 1},
-			{"ꬉꬉꬉꬉ", 4, 1},
+			{"", 1, 2},
+			{"SingleLine", 10, 2},
+			{"Multi\nLine", 5, 4},
+			{"Line with lots of tabs\n\t\t\t\t\t\t\t\t", 8*4, 4},
+			{"ʳʳʳʳ", 4, 2},
+			{"ꬉꬉꬉꬉ", 4, 2},
 		};
 	}
 
@@ -56,19 +56,19 @@ public class GlanceImageTest {
 		img.updateDimensions("ASDF\nHJKL");
 
 		assertEquals(104, img.img.getWidth());
-		assertEquals(202, img.img.getHeight());
+		assertEquals(204, img.img.getHeight());
 
 		// Only added a little, so image should not get regenerated.
 		img.updateDimensions("asdfjkl;asdfjkl;\nasdfjlkasdfjkl\nasdfjkl;a;sdfjkl");
 
 		assertEquals(104, img.img.getWidth());
-		assertEquals(202, img.img.getHeight());
+		assertEquals(204, img.img.getHeight());
 
 		// Went over the existing image boundary so a new one should be created.
 		img.updateDimensions("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 
 		assertEquals(220, img.img.getWidth());
-		assertEquals(201, img.img.getHeight());
+		assertEquals(202, img.img.getHeight());
 	}
 
 	@DataProvider(name="Test-Newlines") public static Object[][] testNewlines() {

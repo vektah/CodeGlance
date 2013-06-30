@@ -56,7 +56,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private Integer activeBuffer = -1;
 	private Integer nextBuffer = 0;
 	private JPanel container;
-	private Logger logger = Logger.getInstance(getClass());
+	private Logger logger = Logger.getInstance(getClass().getName());
 	private Project project;
 	private Boolean updatePending = false;
 

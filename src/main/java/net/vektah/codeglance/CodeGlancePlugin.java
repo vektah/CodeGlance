@@ -40,24 +40,24 @@ public class CodeGlancePlugin implements ProjectComponent {
 	private Logger logger = Logger.getInstance(getClass());
 	private TaskRunner runner = new TaskRunner();
 	private Thread runnerThread = new Thread(runner);
+	private EditorPanelInjector injector;
 
 	public CodeGlancePlugin(Project project) {
 		this.project = project;
-		logger.warn("Constructed");
+		injector = new EditorPanelInjector(project, runner);
 	}
 
 	public void initComponent() {
 		runnerThread.start();
-		project.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new EditorPanelInjector(project, runner));
-		logger.warn("init");
+		project.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, injector);
+		logger.debug("CodeGlance initialized");
 	}
 
 	public void disposeComponent() {
 		runner.stop();
 	}
 
-	@NotNull
-	public String getComponentName() {
+	@NotNull public String getComponentName() {
 		return "CodeGlancePlugin";
 	}
 

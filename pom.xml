@@ -22,6 +22,13 @@
 		<maven.compiler.target>1.6</maven.compiler.target>
 	</properties>
 
+	<distributionManagement>
+		<repository>
+			<id>ssh-repository</id>
+			<url>scpexe://public/codeglance</url>
+		</repository>
+	</distributionManagement>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -39,6 +46,13 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<extensions>
+			<!-- Enabling the use of scp -->
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh-external</artifactId>
+			</extension>
+		</extensions>
 	</build>
 
 	<dependencies>

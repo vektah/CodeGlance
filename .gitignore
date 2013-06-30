@@ -1,6 +1,7 @@
 /.idea
 /target
-*.iml
 /codeglance.xml
+*.iml
+*.jar
 /module_codeglance.xml
 out

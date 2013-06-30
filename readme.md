@@ -1,6 +1,7 @@
-CodeGlance
+CodeGlance [![Build Status](https://travis-ci.org/Vektah/CodeGlance.png?branch=master)](https://travis-ci.org/Vektah/CodeGlance)
 ==========
-[![Build Status](https://travis-ci.org/Vektah/CodeGlance.png?branch=master)](https://travis-ci.org/Vektah/CodeGlance)
+
+Download: http://public.vektah.net/codeglance/net/vektah/CodeGlance/1.0/CodeGlance-1.0.jar
 
 Intelij plugin that displays a code mini-map similar to the one found in Sublime into the editor pane.
 

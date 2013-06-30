@@ -9,16 +9,22 @@
 		themes using your customized colors for syntax highlighting.
 	</description>
 
-	<change-notes>
-		1.1:
-		 - Made character weighting non random, removes the 'film grain' effect when rapidly updating a document.
+	<change-notes><![CDATA[
+		<h3>1.1: Small performance and aesthetic improvements</h3>
+		<ul>
+			<li>Optimized the rendering loop a little</li>
+			<li>Fixed a bug with scrolling in large files and the reticule not matching the top correctly.</li>
+			<li>Made character weighting non random, removes the 'film grain' effect when rapidly updating a document.</li>
+		</ul>
 
-		1.0: Initial release of the plugin:
-		 - Worker thread for rendering
-		 - Color rendering using intelij's tokenizer
-		 - Scrollable!
-		 - Embedded into editor window
-	</change-notes>
+		<h3>1.0: Initial release of the plugin:</h3>
+		<ul>
+			<li>Worker thread for rendering</li>
+			<li>Color rendering using intelij's tokenizer</li>
+			<li>Scrollable!</li>
+			<li>- Embedded into editor window</li>
+		</ul>
+	]]></change-notes>
 
 	<idea-version since-build="107.105"/>
 

@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Vektah/CodeGlance">
 	<id>net.vektah.codeglance</id>
 	<name>CodeGlance</name>
-	<version>1.0</version>
+	<version>1.1</version>
 	<vendor email="adam@vektah.net" url="https://github.com/Vektah/CodeGlance">Vektah</vendor>
 
 	<description>
@@ -10,7 +10,10 @@
 	</description>
 
 	<change-notes>
-		Initial release of the plugin:
+		1.1:
+		 - Made character weighting non random, removes the 'film grain' effect when rapidly updating a document.
+
+		1.0: Initial release of the plugin:
 		 - Worker thread for rendering
 		 - Color rendering using intelij's tokenizer
 		 - Scrollable!

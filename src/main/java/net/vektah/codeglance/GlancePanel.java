@@ -59,6 +59,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private Logger logger = Logger.getInstance(getClass().getName());
 	private Project project;
 	private Boolean updatePending = false;
+	private boolean dirty = false;
 
 	public GlancePanel(Project project, FileEditor fileEditor, JPanel container, TaskRunner runner) {
 		this.runner = runner;
@@ -94,9 +95,18 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		updateImage();
 	}
 
+	/**
+	 * Fires off a new task to the worker thread. This should only be called from the ui thread.
+	 */
 	private void updateImage() {
 		synchronized (updatePending) {
-			if(updatePending) return;
+			// If we have already sent a rendering job off to get processed then first we need to wait for it to finish.
+			// see updateComplete for dirty handling. The is that there will be fast updates plus one final update to
+			// ensure accuracy, dropping any requests in the middle.
+			if(updatePending) {
+				dirty = true;
+				return;
+			}
 			updatePending = true;
 		}
 
@@ -117,6 +127,15 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 			updatePending = false;
 		}
 
+		if(dirty) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override public void run() {
+					updateImage();
+					dirty = false;
+				}
+			});
+		}
+
 		activeBuffer = nextBuffer;
 
 		repaint();
@@ -130,11 +149,12 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		int offset = 0;
 
 		// If the panel is 1:1 then just draw everything in the top left hand corner, otherwise we need to gracefully scroll.
-		if(minimaps[activeBuffer].height > getHeight()) {
+		if(editor.getDocument().getLineCount() * 2 > getHeight()) {
+			int firstVisibleLine = editor.xyToLogicalPosition(new Point(0, (int) editor.getScrollingModel().getVisibleArea().getY())).line;
+			int lastVisibleLine = editor.xyToLogicalPosition(new Point(0, (int) editor.getScrollingModel().getVisibleArea().getMaxY())).line;
 			// Scroll the minimap vertically by the amount that would be off screen scaled to how far through the document we are.
-			int position = editor.xyToLogicalPosition(new Point(0, (int) editor.getScrollingModel().getVisibleArea().getMaxY())).line;
-			float percentComplete = position / (float)editor.getDocument().getLineCount();
-			offset = (int) ((minimaps[activeBuffer].height - getHeight()) * percentComplete);
+			float percentComplete = firstVisibleLine / (float)(editor.getDocument().getLineCount() - (lastVisibleLine - firstVisibleLine));
+			offset = (int) ((editor.getDocument().getLineCount() * 2 - getHeight()) * percentComplete);
 		}
 
 		logger.debug(String.format("Rendering to buffer: %d", activeBuffer));
@@ -143,9 +163,9 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
 			// Draw the image and scale it to stretch vertically.
 			g.drawImage(minimap.img,                                                    // source image
-					0, 0,     minimap.width, getHeight(),  // destination location
-					0, offset, minimap.width, offset + getHeight(),              // source location
-					null);                                                      // observer
+					0, 0,     minimap.width, getHeight(),                               // destination location
+					0, offset, minimap.width, offset + getHeight(),                     // source location
+					null);                                                              // observer
 		}
 
 		// Draw the editor visible area

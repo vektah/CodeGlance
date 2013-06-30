@@ -105,6 +105,9 @@ public class Minimap {
 	 * @return 3 element array, [line_number, o]
 	 */
 	public LineInfo getLine(int i) {
+		int lines = line_endings.get(line_endings.size() - 1);
+		if(i > lines) i = lines;
+		if(i < 0) i = 0;
 		// Dummy entries if there are no lines
 		if(line_endings.size() == 0) return new LineInfo(1, 0, 0);
 		if(line_endings.size() == 1) return new LineInfo(1, 0, 0);
@@ -135,62 +138,90 @@ public class Minimap {
 	}
 
 	/**
-	 * Update the minimap image
+	 * Works out the color a token should be rendered in.
+	 *
+	 * @param element       The element to get the color for
+	 * @param hl            the syntax highlighter for this document
+	 * @param colorScheme   the users color scheme
+	 * @return the RGB color to use for the given element
+	 */
+	private int getColorForElementType(IElementType element, SyntaxHighlighter hl, EditorColorsScheme colorScheme) {
+		int color = colorScheme.getDefaultForeground().getRGB();
+		Color tmp;
+		TextAttributesKey[] attributes = hl.getTokenHighlights(element);
+		for(TextAttributesKey attribute : attributes) {
+			tmp = colorScheme.getAttributes(attribute).getForegroundColor();
+			if(tmp != null) color = tmp.getRGB();
+		}
+
+		return color;
+	}
+
+	/**
+	 * Internal worker function to update the minimap image
 	 *
 	 * @param text          The entire text of the document to render
 	 * @param colorScheme   The users color scheme
 	 * @param hl            The syntax highlighter to use for the language this document is in.
 	 */
 	public void update(CharSequence text, EditorColorsScheme colorScheme, SyntaxHighlighter hl) {
+		logger.debug("Updating file image.");
 		updateDimensions(text);
 
-		Color attribute_color;
 		int color;
-		int offset;
 		int bgcolor = colorScheme.getDefaultBackground().getRGB();
-		LineInfo line;
+		char ch;
+		LineInfo startLine;
 		float weight;
-		int y;
 		Lexer lexer = hl.getHighlightingLexer();
 		IElementType tokenType;
-
 
 		Graphics g = img.getGraphics();
 		g.setColor(colorScheme.getDefaultBackground());
 		g.fillRect(0, 0, img.getWidth(), img.getHeight());
 		g.dispose();
 
-		logger.debug("Updating file image.");
 		lexer.start(text);
 		tokenType = lexer.getTokenType();
 
+		int x, y;
 		while(tokenType != null) {
-			color = colorScheme.getDefaultForeground().getRGB();
-			TextAttributesKey[] attributes = hl.getTokenHighlights(tokenType);
-			for(TextAttributesKey attribute : attributes) {
-				attribute_color = colorScheme.getAttributes(attribute).getForegroundColor();
-				if(attribute_color != null) color = attribute_color.getRGB();
+			startLine = getLine(lexer.getTokenStart());
+			y = startLine.number * 2;
+
+			color = getColorForElementType(tokenType, hl, colorScheme);
+
+			// Pre-loop to count whitespace from start of line.
+			x = 0;
+			for(int i = startLine.begin; i < lexer.getTokenStart(); i++) {
+				if(text.charAt(i) == '\t') {
+					x += 4;
+				} else {
+					x += 1;
+				}
 			}
 
+			// Render whole token, make sure multi lines are handled gracefully.
 			for(int i = lexer.getTokenStart(); i < lexer.getTokenEnd(); i++) {
-				weight = CharacterWeight.getWeight(text.charAt(i));
-				if(weight == 0) continue;
+				ch = text.charAt(i);
 
-				line = getLine(i);
-				offset = i - line.begin;
-
-				// Look for tabs, and add four spaces to offset when one is encountered.
-				for(int j = line.begin; j < i; j++) {
-					if(text.charAt(j) == '\t') {
-						offset += 3;
-					}
+				if(ch == '\n') {
+					x = 0;
+					y += 2;
+				} else if(ch == '\t') {
+					x += 4;
+				} else {
+					x += 1;
 				}
 
-				y = line.number * 2;
+				weight = CharacterWeight.getWeight(text.charAt(i));
 
-				if(0 <= offset && offset < img.getWidth() && 0 <= y && y <= img.getHeight()) {
-					img.setRGB(offset, y, mix(color, bgcolor, weight * 0.3f));
-					img.setRGB(offset, y + 1, mix(color, bgcolor, weight));
+				// No point rendering non visible characters.
+				if(weight == 0) continue;
+
+				if(0 <= x && x < img.getWidth() && 0 <= y && y + 1 <= img.getHeight()) {
+					img.setRGB(x, y, mix(color, bgcolor, weight * 0.3f));
+					img.setRGB(x, y + 1, mix(color, bgcolor, weight));
 				}
 			}
 

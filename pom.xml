@@ -10,7 +10,7 @@
 		<repository>
 			<id>vektah-openapi</id>
 			<name>3rd party openapi repository</name>
-			<url>https://github.com/Vektah/maven-intellij-openapi/raw/master/</url>
+			<url>http://public.vektah.net/maven-intellij-openapi/</url>
 		</repository>
 	</repositories>
 

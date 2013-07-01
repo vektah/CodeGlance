@@ -1,4 +1,4 @@
-CodeGlance [![Build Status](https://travis-ci.org/Vektah/CodeGlance.png?branch=master)](https://travis-ci.org/Vektah/CodeGlance)
+CodeGlance [![Build Status](https://travis-ci.org/Vektah/CodeGlance.png?branch=master)](https://travis-ci.org/Vektah/CodeGlance) ![Trend](https://d2weczhvl823v0.cloudfront.net/Vektah/CodeGlance/trend.png)
 ==========
 
 Latest build: http://public.vektah.net/codeglance/net/vektah/CodeGlance/1.1/CodeGlance-1.1.jar

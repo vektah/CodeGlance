@@ -49,25 +49,66 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 
 	@Override
 	public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
-		JComponent component = fileEditorManager.getSelectedEditor(virtualFile).getComponent();
 
-		FileEditor editor = fileEditorManager.getSelectedEditor(virtualFile);
+		// Seems there is a case where multiple split panes can have the same file open and getSelectedEditor, and even
+		// getEditors(virtualVile) return only one of them... So shotgun approach here.
+		FileEditor[] editors = fileEditorManager.getAllEditors();
+		for(FileEditor editor: editors) {
+			inject(editor);
+		}
+	}
+
+	/**
+	 * Here be dragons. No Seriously. Run!
+	 *
+	 * There is a loading pane that proxies stuff here blah blah.. We need to dig down so we can check
+	 * if we have already injected into a given component... On the plus side might be a bit closer to being able to
+	 * injecting into the editor space itself...
+	 *
+	 * @param editor A text editor to inject into.
+	 */
+	private void inject(FileEditor editor) {
 		if(!(editor instanceof TextEditor)) {
-			logger.info("Only text editors are supported currently.");
+			logger.info("I01: Injection failed, only text editors are supported currently.");
 			return;
 		}
 
-		if(component instanceof JPanel) {
-			JPanel impl = (JPanel)component;
-			if(impl.getLayout() instanceof BorderLayout) {
-				GlancePanel panel = new GlancePanel(project, editor, impl, runner);
-				impl.add(panel, BorderLayout.LINE_END);;
-				logger.debug("Injected a new editor panel!");
-			} else {
-				logger.error("Not a BorderLayout:" .concat (impl.getLayout().getClass().getName()));
-			}
+		if(!(editor.getComponent() instanceof JPanel)) {
+			logger.warn("I02: Injection failed, Not a JPanel");
+			return;
+		}
+		JPanel outerPanel = (JPanel)editor.getComponent();
+
+		if(!(outerPanel.getLayout() instanceof BorderLayout)) {
+			logger.warn("I03: Injection failed, could not find a outer BorderLayout");
+			return;
+		}
+		BorderLayout outerLayout = (BorderLayout)outerPanel.getLayout();
+
+		if(!(outerLayout.getLayoutComponent(BorderLayout.CENTER) instanceof JLayeredPane)) {
+			logger.warn("I04: Injection failed, could not find a layered pane (loading screen?)");
+			return;
+		}
+		JLayeredPane pane = (JLayeredPane)outerLayout.getLayoutComponent(BorderLayout.CENTER);
+
+		if(!(pane.getComponent(1) instanceof JPanel)) {
+			logger.warn("I05: Injection failed, could not find a pane");
+			return;
+		}
+		JPanel panel = (JPanel)pane.getComponent(1);
+
+		if(!(panel.getLayout() instanceof BorderLayout)) {
+			logger.warn("I06: Injection failed, could not find a border layout");
+			return;
+		}
+		BorderLayout innerLayout = (BorderLayout)panel.getLayout();
+
+		// Ok we finally found the actual editor layout. Now make sure we haven't already injected into this editor.
+		if(innerLayout.getLayoutComponent(BorderLayout.LINE_END) == null) {
+			GlancePanel glancePanel = new GlancePanel(project, editor, panel, runner);
+			panel.add(glancePanel, BorderLayout.LINE_END);;
 		} else {
-			logger.error("Not a jpanel");
+			logger.info("I07: Injection skipped. Looks like we have already injected something here.");
 		}
 	}
 

@@ -26,9 +26,7 @@
 package net.vektah.codeglance;
 
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
-import com.intellij.openapi.fileEditor.FileEditorManagerListener;
+import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import net.vektah.codeglance.render.TaskRunner;
@@ -52,10 +50,17 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 	@Override
 	public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
 		JComponent component = fileEditorManager.getSelectedEditor(virtualFile).getComponent();
+
+		FileEditor editor = fileEditorManager.getSelectedEditor(virtualFile);
+		if(!(editor instanceof TextEditor)) {
+			logger.info("Only text editors are supported currently.");
+			return;
+		}
+
 		if(component instanceof JPanel) {
 			JPanel impl = (JPanel)component;
 			if(impl.getLayout() instanceof BorderLayout) {
-				GlancePanel panel = new GlancePanel(project, fileEditorManager.getSelectedEditor(virtualFile), impl, runner);
+				GlancePanel panel = new GlancePanel(project, editor, impl, runner);
 				impl.add(panel, BorderLayout.LINE_END);;
 				logger.debug("Injected a new editor panel!");
 			} else {

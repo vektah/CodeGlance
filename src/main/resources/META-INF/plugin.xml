@@ -13,6 +13,7 @@
 		<h3>1.1a: Misc fixes
 		<ul>
 			<li>Use new BufferedImage instead of UiUtil for Idea 11.x compatibility.</li>
+			<li>Limited panel injection only to text editors</li>
 		</ul>
 		<h3>1.1: Small performance and aesthetic improvements</h3>
 		<ul>

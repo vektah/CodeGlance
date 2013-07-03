@@ -94,7 +94,7 @@ public class Minimap {
 			if(img != null) img.flush();
 			// Create an image that is a bit bigger then the one we need so we don't need to re-create it again soon.
 			// Documents can get big, so rather then relative sizes lets just add a fixed amount on.
-			img = UIUtil.createImage(width + 100, height + 200, BufferedImage.TYPE_INT_ARGB);
+			img = new BufferedImage(width + 100, height + 200, BufferedImage.TYPE_3BYTE_BGR);
 			logger.debug("Created new image");
 		}
 	}

@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Vektah/CodeGlance">
 	<id>net.vektah.codeglance</id>
 	<name>CodeGlance</name>
-	<version>1.1</version>
+	<version>1.1a</version>
 	<vendor email="adam@vektah.net" url="https://github.com/Vektah/CodeGlance">Vektah</vendor>
 
 	<description>
@@ -10,6 +10,10 @@
 	</description>
 
 	<change-notes><![CDATA[
+		<h3>1.1a: Misc fixes
+		<ul>
+			<li>Use new BufferedImage instead of UiUtil for Idea 11.x compatibility.</li>
+		</ul>
 		<h3>1.1: Small performance and aesthetic improvements</h3>
 		<ul>
 			<li>Optimized the rendering loop a little</li>

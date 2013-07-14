@@ -13,6 +13,7 @@
 		<h3>1.2: Smaller with transparency
 		<ul>
 			<li>Now uses a transparent selection box and the maximum width is limited to 100 chars. This will probably become configurable</li>
+			<li>Increased the number of render jobs that can be in the queue</li>
 		</ul>
 		<h3>1.1a: Misc fixes
 		<ul>

@@ -73,43 +73,24 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 			return;
 		}
 
-		if(!(editor.getComponent() instanceof JPanel)) {
-			logger.warn("I02: Injection failed, Not a JPanel");
-			return;
-		}
-		JPanel outerPanel = (JPanel)editor.getComponent();
+		try {
+			JPanel outerPanel = (JPanel)editor.getComponent();
+			BorderLayout outerLayout = (BorderLayout)outerPanel.getLayout();
+			JLayeredPane pane = (JLayeredPane)outerLayout.getLayoutComponent(BorderLayout.CENTER);
+			JPanel panel = (JPanel)pane.getComponent(1);
+			BorderLayout innerLayout = (BorderLayout)panel.getLayout();
 
-		if(!(outerPanel.getLayout() instanceof BorderLayout)) {
-			logger.warn("I03: Injection failed, could not find a outer BorderLayout");
-			return;
-		}
-		BorderLayout outerLayout = (BorderLayout)outerPanel.getLayout();
-
-		if(!(outerLayout.getLayoutComponent(BorderLayout.CENTER) instanceof JLayeredPane)) {
-			logger.warn("I04: Injection failed, could not find a layered pane (loading screen?)");
-			return;
-		}
-		JLayeredPane pane = (JLayeredPane)outerLayout.getLayoutComponent(BorderLayout.CENTER);
-
-		if(!(pane.getComponent(1) instanceof JPanel)) {
-			logger.warn("I05: Injection failed, could not find a pane");
-			return;
-		}
-		JPanel panel = (JPanel)pane.getComponent(1);
-
-		if(!(panel.getLayout() instanceof BorderLayout)) {
-			logger.warn("I06: Injection failed, could not find a border layout");
-			return;
-		}
-		BorderLayout innerLayout = (BorderLayout)panel.getLayout();
-
-		// Ok we finally found the actual editor layout. Now make sure we haven't already injected into this editor.
-		if(innerLayout.getLayoutComponent(BorderLayout.LINE_END) == null) {
-			GlancePanel glancePanel = new GlancePanel(project, editor, panel, runner);
-			panel.add(glancePanel, BorderLayout.LINE_END);;
-		} else {
-			logger.info("I07: Injection skipped. Looks like we have already injected something here.");
-		}
+			// Ok we finally found the actual editor layout. Now make sure we haven't already injected into this editor.
+			if(innerLayout.getLayoutComponent(BorderLayout.LINE_END) == null) {
+				GlancePanel glancePanel = new GlancePanel(project, editor, panel, runner);
+				panel.add(glancePanel, BorderLayout.LINE_END);;
+			} else {
+				logger.info("I07: Injection skipped. Looks like we have already injected something here.");
+			}
+			} catch(ClassCastException e) {
+				logger.warn(String.format("Injection failed '%s' on line %d.", e.getMessage(), e.getStackTrace()[0].getLineNumber()));
+				return;
+			}
 	}
 
 	@Override

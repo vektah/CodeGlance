@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Vektah/CodeGlance">
 	<id>net.vektah.codeglance</id>
 	<name>CodeGlance</name>
-	<version>1.1a</version>
+	<version>1.2</version>
 	<vendor email="adam@vektah.net" url="https://github.com/Vektah/CodeGlance">Vektah</vendor>
 
 	<description>
@@ -10,10 +10,15 @@
 	</description>
 
 	<change-notes><![CDATA[
+		<h3>1.2: Smaller with transparency
+		<ul>
+			<li>Now uses a transparent selection box and the maximum width is limited to 100 chars. This will probably become configurable</li>
+		</ul>
 		<h3>1.1a: Misc fixes
 		<ul>
 			<li>Use new BufferedImage instead of UiUtil for Idea 11.x compatibility.</li>
 			<li>Limited panel injection only to text editors</li>
+			<li>Fixed a bug with split panes not displaying correctly on restart</li>
 		</ul>
 		<h3>1.1: Small performance and aesthetic improvements</h3>
 		<ul>

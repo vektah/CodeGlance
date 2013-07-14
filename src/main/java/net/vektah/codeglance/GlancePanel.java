@@ -169,24 +169,29 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		}
 
 		// Draw the editor visible area
-		Rectangle visible = getRenderAreaInChars();
-		g.setColor(Color.GRAY);
-
-		int width = visible.x + visible.width - visible.x;
-		int height = visible.y + visible.height - visible.y;
-		g.drawRect(visible.x, visible.y - offset, width, height);
-	}
-
-	public Rectangle getRenderAreaInChars() {
 		Rectangle visible = editor.getScrollingModel().getVisibleArea();
-		LogicalPosition top_left = editor.xyToLogicalPosition(new Point(visible.x, visible.y));
-		LogicalPosition bottom_right = editor.xyToLogicalPosition(new Point(visible.x + visible.width, visible.y + visible.height));
+		LogicalPosition top = editor.xyToLogicalPosition(new Point(visible.x, visible.y));
+		LogicalPosition bottom = editor.xyToLogicalPosition(new Point(visible.x, visible.y + visible.height));
+		int start = top.line * 2 - offset;
+		int height = (bottom.line * 2) - start;
+		int width = getWidth() - 1;
 
-		return new Rectangle(top_left.column, top_left.line * 2, bottom_right.column - top_left.column, (bottom_right.line - top_left.line) * 2);
+		g.setColor(Color.GRAY);
+		Graphics2D g2d = (Graphics2D) g;
+		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.30f));
+		g2d.drawRect(0, start, width, height);
+		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f));
+		g2d.fillRect(0, start, width, height);
 	}
 
 	@Override public void visibleAreaChanged(VisibleAreaEvent visibleAreaEvent) {
-		setPreferredSize(new Dimension(GlancePanel.this.container.getWidth() / 10, 0));
+		// Window should not take up more then 10%
+		int percentageWidth = GlancePanel.this.container.getWidth() / 10;
+		// but shouldn't be too wide either. 100 chars wide should be enough to visualize a code outline.
+		// TODO: This should probably be a config option.
+		int totalWidth = Math.min(percentageWidth, 100);
+		setPreferredSize(new Dimension(totalWidth, 0));
+
 		repaint();
 	}
 

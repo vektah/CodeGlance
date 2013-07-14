@@ -164,8 +164,8 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
 			// Draw the image and scale it to stretch vertically.
 			g.drawImage(minimap.img,                                                    // source image
-					0, 0,     minimap.width, getHeight(),                               // destination location
-					0, offset, minimap.width, offset + getHeight(),                     // source location
+					0, 0,     getWidth(), getHeight(),                                  // destination location
+					0, offset, getWidth(), offset + getHeight(),                        // source location
 					null);                                                              // observer
 		}
 

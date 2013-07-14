@@ -31,7 +31,6 @@ import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.psi.tree.IElementType;
-import com.intellij.util.ui.UIUtil;
 import net.vektah.codeglance.GlancePanel;
 
 import java.awt.*;
@@ -44,7 +43,6 @@ import java.util.ArrayList;
 public class Minimap {
 	public BufferedImage img;
 	public int height;
-	public int width;
 	private Logger logger = Logger.getInstance(getClass());
 	private ArrayList<Integer> line_endings;
 
@@ -84,18 +82,15 @@ public class Minimap {
 		// If there is no final newline add one.
 		if(line_endings.get(line_endings.size() - 1) != text.length() - 1) line_endings.add(text.length() - 1);
 
-		if(line_length > longest_line) longest_line = line_length;
-
-		width = Math.min(longest_line, GlancePanel.MAX_WIDTH);    // TODO should be configurable
 		height = lines * 2;     // Two pixels per line
 
 		// If the image is too small to represent the entire document now then regenerate it
 		// TODO: Copy old image when incremental update is added.
-		if (img == null || img.getWidth() < width || img.getHeight() < height) {
+		if (img == null || img.getHeight() < height) {
 			if(img != null) img.flush();
 			// Create an image that is a bit bigger then the one we need so we don't need to re-create it again soon.
 			// Documents can get big, so rather then relative sizes lets just add a fixed amount on.
-			img = new BufferedImage(width, height + 200, BufferedImage.TYPE_3BYTE_BGR);
+			img = new BufferedImage(GlancePanel.MAX_WIDTH, height + 200, BufferedImage.TYPE_3BYTE_BGR);
 			logger.debug("Created new image");
 		}
 	}

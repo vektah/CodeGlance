@@ -25,6 +25,8 @@
 
 package net.vektah.codeglance.render;
 
+import com.intellij.openapi.util.text.StringUtil;
+import net.vektah.codeglance.GlancePanel;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -33,20 +35,19 @@ import static junit.framework.Assert.*;
 public class GlanceImageTest {
 	@DataProvider(name="Test-Dimensions") public static Object[][] testDimensions() {
 		return new Object[][] {
-			{"", 1, 2},
-			{"SingleLine", 10, 2},
-			{"Multi\nLine", 5, 4},
-			{"Line with lots of tabs\n\t\t\t\t\t\t\t\t", 8*4, 4},
-			{"ʳʳʳʳ", 4, 2},
-			{"ꬉꬉꬉꬉ", 4, 2},
+			{"", 2},
+			{"SingleLine",  2},
+			{"Multi\nLine", 4},
+			{"Line with lots of tabs\n\t\t\t\t\t\t\t\t", 4},
+			{"ʳʳʳʳ", 2},
+			{"ꬉꬉꬉꬉ", 2},
 		};
 	}
 
-	@Test(dataProvider = "Test-Dimensions") public void test_calculate_dimensions(CharSequence string, int width, int height) {
+	@Test(dataProvider = "Test-Dimensions") public void test_calculate_dimensions(CharSequence string, int height) {
 		Minimap img = new Minimap();
 
 		img.updateDimensions(string);
-		assertEquals(width, img.width);
 		assertEquals(height, img.height);
 	}
 
@@ -55,20 +56,20 @@ public class GlanceImageTest {
 
 		img.updateDimensions("ASDF\nHJKL");
 
-		assertEquals(104, img.img.getWidth());
+		assertEquals(GlancePanel.MAX_WIDTH, img.img.getWidth());
 		assertEquals(204, img.img.getHeight());
 
 		// Only added a little, so image should not get regenerated.
 		img.updateDimensions("asdfjkl;asdfjkl;\nasdfjlkasdfjkl\nasdfjkl;a;sdfjkl");
 
-		assertEquals(104, img.img.getWidth());
+		assertEquals(GlancePanel.MAX_WIDTH, img.img.getWidth());
 		assertEquals(204, img.img.getHeight());
 
 		// Went over the existing image boundary so a new one should be created.
-		img.updateDimensions("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+		img.updateDimensions(StringUtil.repeat("\na", 150));
 
-		assertEquals(220, img.img.getWidth());
-		assertEquals(202, img.img.getHeight());
+		assertEquals(GlancePanel.MAX_WIDTH, img.img.getWidth());
+		assertEquals(502, img.img.getHeight());
 	}
 
 	@DataProvider(name="Test-Newlines") public static Object[][] testNewlines() {

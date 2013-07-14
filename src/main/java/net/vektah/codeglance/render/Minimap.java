@@ -32,6 +32,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.ui.UIUtil;
+import net.vektah.codeglance.GlancePanel;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -85,7 +86,7 @@ public class Minimap {
 
 		if(line_length > longest_line) longest_line = line_length;
 
-		width = longest_line;
+		width = Math.min(longest_line, GlancePanel.MAX_WIDTH);    // TODO should be configurable
 		height = lines * 2;     // Two pixels per line
 
 		// If the image is too small to represent the entire document now then regenerate it
@@ -94,7 +95,7 @@ public class Minimap {
 			if(img != null) img.flush();
 			// Create an image that is a bit bigger then the one we need so we don't need to re-create it again soon.
 			// Documents can get big, so rather then relative sizes lets just add a fixed amount on.
-			img = new BufferedImage(width + 100, height + 200, BufferedImage.TYPE_3BYTE_BGR);
+			img = new BufferedImage(width, height + 200, BufferedImage.TYPE_3BYTE_BGR);
 			logger.debug("Created new image");
 		}
 	}

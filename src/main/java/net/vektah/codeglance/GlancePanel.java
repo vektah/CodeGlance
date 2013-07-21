@@ -122,6 +122,8 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 			updatePending = true;
 		}
 
+		if(project.isDisposed()) return;
+
 		PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
 		SyntaxHighlighter hl = SyntaxHighlighterFactory.getSyntaxHighlighter(file.getLanguage(), project, file.getVirtualFile());
 

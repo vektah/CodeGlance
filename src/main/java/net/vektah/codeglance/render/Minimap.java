@@ -182,42 +182,50 @@ public class Minimap {
 
 		int x, y;
 		while(tokenType != null) {
-			startLine = getLine(lexer.getTokenStart());
+			int start = lexer.getTokenStart();
+			startLine = getLine(start);
 			y = startLine.number * 2;
 
 			color = getColorForElementType(tokenType, hl, colorScheme);
 
 			// Pre-loop to count whitespace from start of line.
 			x = 0;
-			for(int i = startLine.begin; i < lexer.getTokenStart(); i++) {
+			for(int i = startLine.begin; i < start; i++) {
 				if(text.charAt(i) == '\t') {
 					x += 4;
 				} else {
 					x += 1;
 				}
+
+				// Abort if this line is getting to long...
+				if(x > GlancePanel.MAX_WIDTH) break;
 			}
 
-			// Render whole token, make sure multi lines are handled gracefully.
-			for(int i = lexer.getTokenStart(); i < lexer.getTokenEnd(); i++) {
-				ch = text.charAt(i);
+			// Looks like this line is longer then we will ever display, lets not bother trying to render.
+			if(x <= GlancePanel.MAX_WIDTH) {
 
-				if(ch == '\n') {
-					x = 0;
-					y += 2;
-				} else if(ch == '\t') {
-					x += 4;
-				} else {
-					x += 1;
-				}
+				// Render whole token, make sure multi lines are handled gracefully.
+				for(int i = start; i < lexer.getTokenEnd(); i++) {
+					ch = text.charAt(i);
 
-				weight = CharacterWeight.getWeight(text.charAt(i));
+					if(ch == '\n') {
+						x = 0;
+						y += 2;
+					} else if(ch == '\t') {
+						x += 4;
+					} else {
+						x += 1;
+					}
 
-				// No point rendering non visible characters.
-				if(weight == 0) continue;
+					weight = CharacterWeight.getWeight(text.charAt(i));
 
-				if(0 <= x && x < img.getWidth() && 0 <= y && y + 1 <= img.getHeight()) {
-					img.setRGB(x, y, mix(color, bgcolor, weight * 0.3f));
-					img.setRGB(x, y + 1, mix(color, bgcolor, weight));
+					// No point rendering non visible characters.
+					if(weight == 0) continue;
+
+					if(0 <= x && x < img.getWidth() && 0 <= y && y + 1 <= img.getHeight()) {
+						img.setRGB(x, y, mix(color, bgcolor, weight * 0.3f));
+						img.setRGB(x, y + 1, mix(color, bgcolor, weight));
+					}
 				}
 			}
 

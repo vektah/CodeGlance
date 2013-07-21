@@ -69,7 +69,7 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 	 */
 	private void inject(FileEditor editor) {
 		if(!(editor instanceof TextEditor)) {
-			logger.info("I01: Injection failed, only text editors are supported currently.");
+			logger.debug("I01: Injection failed, only text editors are supported currently.");
 			return;
 		}
 
@@ -85,7 +85,7 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 				GlancePanel glancePanel = new GlancePanel(project, editor, panel, runner);
 				panel.add(glancePanel, BorderLayout.LINE_END);;
 			} else {
-				logger.info("I07: Injection skipped. Looks like we have already injected something here.");
+				logger.debug("I07: Injection skipped. Looks like we have already injected something here.");
 			}
 			} catch(ClassCastException e) {
 				logger.warn(String.format("Injection failed '%s' on line %d.", e.getMessage(), e.getStackTrace()[0].getLineNumber()));

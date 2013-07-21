@@ -202,8 +202,8 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		if(x > getWidth()) x = getWidth();
 		if(y > getHeight()) y = getHeight();
 
-		// If the panel is 1:1 then mapping straight to the line that was selected is a good way to go.
-		if(minimaps[activeBuffer].height < getHeight()) {
+		// If the panel is 1:1 or has not been generated yet then mapping straight to the line that was selected is a good way to go.
+		if(activeBuffer == -1 || minimaps[activeBuffer].height < getHeight()) {
 			return new LogicalPosition(y / 2, x);
 		} else {
 			// Otherwise use the click as the relative position

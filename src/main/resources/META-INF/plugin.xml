@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Vektah/CodeGlance">
 	<id>net.vektah.codeglance</id>
 	<name>CodeGlance</name>
-	<version>1.2</version>
+	<version>1.2.1</version>
 	<vendor email="adam@vektah.net" url="https://github.com/Vektah/CodeGlance">Vektah</vendor>
 
 	<description>
@@ -10,6 +10,11 @@
 	</description>
 
 	<change-notes><![CDATA[
+		<h3>1.2a: Scale fixes
+		<ul>
+			<li>Fixes stretching of the view area when looking at large files.</li>
+			<li>Increased viewport visibility a touch.</li>
+		</ul>
 		<h3>1.2: Smaller with transparency
 		<ul>
 			<li>Now uses a transparent selection box and the maximum width is limited to 100 chars. This will probably become configurable</li>

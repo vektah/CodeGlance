@@ -37,6 +37,7 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
+import net.vektah.codeglance.render.CoordinateHelper;
 import net.vektah.codeglance.render.Minimap;
 import net.vektah.codeglance.render.RenderTask;
 import net.vektah.codeglance.render.TaskRunner;
@@ -155,47 +156,50 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		repaint();
 	}
 
+	private float getHidpiScale() {
+		// Work around for apple going full retard with half pixel pixels.
+		Float scale = (Float)Toolkit.getDefaultToolkit().getDesktopProperty("apple.awt.contentScaleFactor");
+		if(scale == null) {
+			scale = 1.0f;
+		}
+
+		return scale;
+	}
+
 	@Override
 	public void paint(Graphics g) {
 		g.setColor(editor.getColorsScheme().getDefaultBackground());
 		g.fillRect(0, 0, getWidth(), getHeight());
 
-		int offset = 0;
-
-		// If the panel is 1:1 then just draw everything in the top left hand corner, otherwise we need to gracefully scroll.
-		if(editor.getDocument().getLineCount() * 2 > getHeight()) {
-			int firstVisibleLine = editor.xyToLogicalPosition(new Point(0, (int) editor.getScrollingModel().getVisibleArea().getY())).line;
-			int lastVisibleLine = editor.xyToLogicalPosition(new Point(0, (int) editor.getScrollingModel().getVisibleArea().getMaxY())).line;
-			// Scroll the minimap vertically by the amount that would be off screen scaled to how far through the document we are.
-			float percentComplete = firstVisibleLine / (float)(editor.getDocument().getLineCount() - (lastVisibleLine - firstVisibleLine));
-			offset = (int) ((editor.getDocument().getLineCount() * 2 - getHeight()) * percentComplete);
-		}
-
 		logger.debug(String.format("Rendering to buffer: %d", activeBuffer));
 		if(activeBuffer >= 0) {
 			Minimap minimap = minimaps[activeBuffer];
 
+			CoordinateHelper coords = new CoordinateHelper();
+			coords.setImageHeight(minimap.height)
+				.setPanelHeight(getHeight())
+				.setPanelWidth(getWidth())
+				.setFirstVisibleLine(editor.xyToLogicalPosition(new Point(0, (int) editor.getScrollingModel().getVisibleArea().getY())).line)
+				.setLastVisibleLine(editor.xyToLogicalPosition(new Point(0, (int) editor.getScrollingModel().getVisibleArea().getMaxY())).line)
+				.setHidpiScale(getHidpiScale());
+
+			Rectangle src = coords.getImageSource();
+			Rectangle dest = coords.getImageDestination();
+
 			// Draw the image and scale it to stretch vertically.
 			g.drawImage(minimap.img,                                                    // source image
-					0, 0,     getWidth(), getHeight(),                                  // destination location
-					0, offset, getWidth(), offset + getHeight(),                        // source location
-					null);                                                              // observer
+					dest.x, dest.y, dest.width, dest.height,
+					src.x, src.y, src.width, src.height,
+					null);
+
+			Rectangle viewport = coords.getViewport();
+			g.setColor(Color.GRAY);
+			Graphics2D g2d = (Graphics2D) g;
+			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.40f));
+			g2d.drawRect(viewport.x, viewport.y, viewport.width, viewport.height);
+			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f));
+			g2d.fillRect(viewport.x, viewport.y, viewport.width, viewport.height);
 		}
-
-		// Draw the editor visible area
-		Rectangle visible = editor.getScrollingModel().getVisibleArea();
-		LogicalPosition top = editor.xyToLogicalPosition(new Point(visible.x, visible.y));
-		LogicalPosition bottom = editor.xyToLogicalPosition(new Point(visible.x, visible.y + visible.height));
-		int start = top.line * 2 - offset;
-		int height = (bottom.line * 2) - start;
-		int width = getWidth() - 1;
-
-		g.setColor(Color.GRAY);
-		Graphics2D g2d = (Graphics2D) g;
-		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.30f));
-		g2d.drawRect(0, start, width, height);
-		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f));
-		g2d.fillRect(0, start, width, height);
 	}
 
 	@Override public void visibleAreaChanged(VisibleAreaEvent visibleAreaEvent) {
@@ -211,7 +215,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
 		// If the panel is 1:1 or has not been generated yet then mapping straight to the line that was selected is a good way to go.
 		if(activeBuffer == -1 || minimaps[activeBuffer].height < getHeight()) {
-			return new LogicalPosition(y / 2, x);
+			return new LogicalPosition((int) (y / CoordinateHelper.PIXELS_PER_LINE * getHidpiScale()), x);
 		} else {
 			// Otherwise use the click as the relative position
 			return new LogicalPosition((int) (y / (float)getHeight() * minimaps[activeBuffer].height) / 2, x);

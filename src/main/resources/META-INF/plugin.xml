@@ -12,6 +12,7 @@
 	<change-notes><![CDATA[
 		<h3>1.2a: Scale fixes
 		<ul>
+			<li>Fixed a rendering issue for osx with vertical stretching.</li>
 			<li>Fixes stretching of the view area when looking at large files.</li>
 			<li>Increased viewport visibility a touch.</li>
 		</ul>

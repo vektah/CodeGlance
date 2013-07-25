@@ -34,6 +34,7 @@ public class CoordinateHelper {
 	private int firstVisibleLine;
 	private int lastVisibleLine;
 	private float hidpiScale;
+    private int srcHeight;
 	public static final int PIXELS_PER_LINE = 2;
 
 	public CoordinateHelper setPanelHeight(int panelHeight) {
@@ -90,11 +91,17 @@ public class CoordinateHelper {
 
 	public Rectangle getImageSource() {
 		int offset = getOffset();
-		return new Rectangle(0, offset, panelWidth, (int) (offset + panelHeight * hidpiScale));
+        int end = (int) Math.min(offset + panelHeight * hidpiScale, imageHeight);
+        srcHeight = end - offset;
+		return new Rectangle(0, offset, panelWidth, end);
 	}
 
+    /**
+     * Calculates the coordinates to draw the image onto within the frame. Make sure getImageSource has been called first!
+     * @return
+     */
 	public Rectangle getImageDestination() {
-		return new Rectangle(0, 0, panelWidth, panelHeight);
+		return new Rectangle(0, 0, panelWidth, Math.min(srcHeight, panelHeight));
 	}
 
 	public Rectangle getViewport() {

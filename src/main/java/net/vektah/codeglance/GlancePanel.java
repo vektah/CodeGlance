@@ -27,7 +27,6 @@ package net.vektah.codeglance;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -62,6 +61,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private Project project;
 	private Boolean updatePending = false;
 	private boolean dirty = false;
+	private CoordinateHelper coords = new CoordinateHelper();
 
 	public GlancePanel(Project project, FileEditor fileEditor, JPanel container, TaskRunner runner) {
 		this.runner = runner;
@@ -175,7 +175,6 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		if(activeBuffer >= 0) {
 			Minimap minimap = minimaps[activeBuffer];
 
-			CoordinateHelper coords = new CoordinateHelper();
 			coords.setImageHeight(minimap.height)
 				.setPanelHeight(getHeight())
 				.setPanelWidth(getWidth())
@@ -207,35 +206,16 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		repaint();
 	}
 
-	protected LogicalPosition getPositionFor(int x, int y) {
-		if(x < 0) x = 0;
-		if(y < 0) y = 0;
-		if(x > getWidth()) x = getWidth();
-		if(y > getHeight()) y = getHeight();
-
-		// If the panel is 1:1 or has not been generated yet then mapping straight to the line that was selected is a good way to go.
-		if(activeBuffer == -1 || minimaps[activeBuffer].height < getHeight()) {
-			return new LogicalPosition((int) (y / CoordinateHelper.PIXELS_PER_LINE * getHidpiScale()), x);
-		} else {
-			// Otherwise use the click as the relative position
-			return new LogicalPosition((int) (y / (float)getHeight() * minimaps[activeBuffer].height) / 2, x);
-		}
-	}
-
 	private class MouseListener extends MouseAdapter {
 		@Override public void mouseDragged(MouseEvent e) {
 			// Disable animation when dragging for better experience.
 			editor.getScrollingModel().disableAnimation();
-			editor.getScrollingModel().scrollTo(getPositionFor(e.getX(), e.getY()), ScrollType.CENTER);
+			editor.getScrollingModel().scrollTo(coords.getPositionFor(e.getX(), e.getY(), true), ScrollType.CENTER);
 			editor.getScrollingModel().enableAnimation();
 		}
 
 		@Override public void mouseClicked(MouseEvent e) {
-			editor.getScrollingModel().scrollTo(getPositionFor(e.getX(), e.getY()), ScrollType.CENTER);
-		}
-
-		@Override public void mousePressed(MouseEvent e) {
-			editor.getScrollingModel().scrollTo(getPositionFor(e.getX(), e.getY()), ScrollType.CENTER);
+			editor.getScrollingModel().scrollTo(coords.getPositionFor(e.getX(), e.getY(), false), ScrollType.CENTER);
 		}
 	}
 }

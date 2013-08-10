@@ -25,16 +25,18 @@
 
 package net.vektah.codeglance.render;
 
+import com.intellij.openapi.editor.LogicalPosition;
+
 import java.awt.*;
 
 public class CoordinateHelper {
-	private int panelHeight;
-	private int panelWidth;
-	private int imageHeight;
-	private int firstVisibleLine;
-	private int lastVisibleLine;
-	private float hidpiScale;
-    private int srcHeight;
+	private int panelHeight = 0;
+	private int panelWidth = 0;
+	private int imageHeight = 0;
+	private int firstVisibleLine = 0;
+	private int lastVisibleLine = 0;
+	private float hidpiScale = 1.0f;
+    private int srcHeight = 0;
 	public static final int PIXELS_PER_LINE = 2;
 
 	public CoordinateHelper setPanelHeight(int panelHeight) {
@@ -112,5 +114,27 @@ public class CoordinateHelper {
 			panelWidth - 1,
 			(int)((lastVisibleLine - firstVisibleLine) * PIXELS_PER_LINE / hidpiScale)
 		);
+	}
+
+	public LogicalPosition getPositionFor(int x, int y, boolean dragged) {
+		if(x < 0) x = 0;
+		if(y < 0) y = 0;
+		if(x > panelWidth) x = panelWidth;
+		if(y > panelHeight) y = panelHeight;
+
+		// If the panel is 1:1 or has not been generated yet then mapping straight to the line that was selected is a good way to go.
+		if(imageHeight < panelHeight) {
+			return new LogicalPosition((int) (y / CoordinateHelper.PIXELS_PER_LINE * hidpiScale), x);
+		} else {
+			if (dragged) {
+				// When dragging use a percentage based position, 50% on window = 50% on document
+				return new LogicalPosition((int) (y / (float)panelHeight * imageHeight) / 2, x);
+			} else {
+				int offsetLines = getOffset() / CoordinateHelper.PIXELS_PER_LINE;
+				// But for clicks we should take into account where the window currently is and adjust from there so
+				// the user gets taken to the code block they clicked on.
+				return new LogicalPosition( (int) (y / CoordinateHelper.PIXELS_PER_LINE * hidpiScale) + offsetLines, x);
+			}
+		}
 	}
 }

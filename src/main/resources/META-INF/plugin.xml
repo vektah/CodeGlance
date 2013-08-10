@@ -13,6 +13,7 @@
 		<h3>1.2.2: Scale fixes
 		<ul>
 			<li>Fixed an NPE in PhpStorm</li>
+			<li>Fixed clicking on a section of code in a long file, dragging still behaves the same with percentage based movement.</li>
 		</ul>
 		<h3>1.2.1: Scale fixes
 		<ul>

@@ -29,6 +29,7 @@ import com.intellij.lexer.Lexer;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.psi.tree.IElementType;
 import net.vektah.codeglance.GlancePanel;
@@ -146,8 +147,11 @@ public class Minimap {
 		Color tmp;
 		TextAttributesKey[] attributes = hl.getTokenHighlights(element);
 		for(TextAttributesKey attribute : attributes) {
-			tmp = colorScheme.getAttributes(attribute).getForegroundColor();
-			if(tmp != null) color = tmp.getRGB();
+			TextAttributes attr = colorScheme.getAttributes(attribute);
+			if(attr != null) {
+				tmp = attr.getForegroundColor();
+				if(tmp != null) color = tmp.getRGB();
+			}
 		}
 
 		return color;

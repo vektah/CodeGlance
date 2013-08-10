@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Vektah/CodeGlance">
 	<id>net.vektah.codeglance</id>
 	<name>CodeGlance</name>
-	<version>1.2.1</version>
+	<version>1.2.2</version>
 	<vendor email="adam@vektah.net" url="https://github.com/Vektah/CodeGlance">Vektah</vendor>
 
 	<description>
@@ -10,7 +10,11 @@
 	</description>
 
 	<change-notes><![CDATA[
-		<h3>1.2a: Scale fixes
+		<h3>1.2.2: Scale fixes
+		<ul>
+			<li>Fixed an NPE in PhpStorm</li>
+		</ul>
+		<h3>1.2.1: Scale fixes
 		<ul>
 			<li>Fixed a rendering issue for osx with vertical stretching.</li>
 			<li>Fixes stretching of the view area when looking at large files.</li>

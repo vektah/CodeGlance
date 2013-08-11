@@ -23,42 +23,55 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.vektah.codeglance.render;
+package net.vektah.codeglance.config;
 
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.options.Configurable;
+import com.intellij.openapi.options.ConfigurationException;
+import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.Nullable;
 
-import static org.testng.Assert.*;
+import javax.swing.*;
 
-/**
- * Some basic sanity tests that the weight generation function works OK.
- */
-public class CharacterWeightTest {
-	@Test public void test_lower_boundaries() {
-		assertEquals(0, CharacterWeight.getTopWeight((char) 0), 0.001);
-		assertEquals(0, CharacterWeight.getTopWeight((char) 1), 0.001);
-		assertEquals(0, CharacterWeight.getTopWeight((char) 32), 0.001);
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 33));
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 126));
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 127));
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 128));
+public class ConfigEntry implements Configurable {
+	private ConfigForm form;
+	private ConfigService configService = ServiceManager.getService(ConfigService.class);
+	private Config config = configService.getState();
+
+	@Nls @Override public String getDisplayName() {
+		return "CodeGlance";
 	}
 
-	@DataProvider(name="Test-Relative-Weights") public static Object[][] testRelativeWeights() {
-		return new Object[][] {
-			{'.', ','},
-			{'1', '8'},
-			{'.', 'a'},
-			{',', '1'},
-		};
+	@Nullable @Override public String getHelpTopic() {
+		return "Configuration for the CodeGlance minimap";
 	}
 
-	@Test(dataProvider = "Test-Relative-Weights") public void test_relative_weights_are_sane(char a, char b) {
-		assertTrue(CharacterWeight.getTopWeight(a) + CharacterWeight.getBottomWeight(a) < CharacterWeight.getTopWeight(b) + CharacterWeight.getBottomWeight(b));
+	@Nullable @Override public JComponent createComponent() {
+		form = new ConfigForm();
+		reset();
+		return form.getRoot();
 	}
 
-	@Test public void test_known_values() {
-		assertEquals(0.2458f, CharacterWeight.getTopWeight('v'));
-		assertEquals(0.3538f, CharacterWeight.getBottomWeight('v'));
+	@Override public boolean isModified() {
+		if (form == null) return false;
+
+		return config.pixelsPerLine != form.getPixelsPerLine();
+	}
+
+	@Override public void apply() throws ConfigurationException {
+		if(form == null) return;
+
+		config.pixelsPerLine = form.getPixelsPerLine();
+		configService.dispatch().configChanged();
+	}
+
+	@Override public void reset() {
+		if(form == null) return;
+
+		form.setPixelsPerLine(config.pixelsPerLine);
+	}
+
+	@Override public void disposeUIResources() {
+		form = null;
 	}
 }

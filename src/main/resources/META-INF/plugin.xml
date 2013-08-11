@@ -14,6 +14,7 @@
 		<ul>
 			<li>Fixed an NPE in PhpStorm</li>
 			<li>Fixed clicking on a section of code in a long file, dragging still behaves the same with percentage based movement.</li>
+			<li>Pixels per line is now configurable</li>
 		</ul>
 		<h3>1.2.1: Scale fixes
 		<ul>
@@ -56,4 +57,9 @@
 	<project-components>
 		<component><implementation-class>net.vektah.codeglance.CodeGlancePlugin</implementation-class></component>
 	</project-components>
+
+	<extensions defaultExtensionNs="com.intellij">
+		<applicationService serviceImplementation="net.vektah.codeglance.config.ConfigService" />
+		<applicationConfigurable implementation="net.vektah.codeglance.config.ConfigEntry" />
+	</extensions>
 </idea-plugin>

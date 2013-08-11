@@ -33,6 +33,7 @@ import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.psi.tree.IElementType;
 import net.vektah.codeglance.GlancePanel;
+import net.vektah.codeglance.config.Config;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -46,6 +47,11 @@ public class Minimap {
 	public int height;
 	private Logger logger = Logger.getInstance(getClass());
 	private ArrayList<Integer> line_endings;
+	private Config config;
+
+	public Minimap(Config config) {
+		this.config = config;
+	}
 
 	/**
 	 * Scans over the entire document once to work out the required dimensions then rebuilds the image if nessicary.
@@ -83,7 +89,7 @@ public class Minimap {
 		// If there is no final newline add one.
 		if(line_endings.get(line_endings.size() - 1) != text.length() - 1) line_endings.add(text.length() - 1);
 
-		height = lines * 2;     // Two pixels per line
+		height = lines * config.pixelsPerLine;
 
 		// If the image is too small to represent the entire document now then regenerate it
 		// TODO: Copy old image when incremental update is added.
@@ -91,7 +97,7 @@ public class Minimap {
 			if(img != null) img.flush();
 			// Create an image that is a bit bigger then the one we need so we don't need to re-create it again soon.
 			// Documents can get big, so rather then relative sizes lets just add a fixed amount on.
-			img = new BufferedImage(GlancePanel.MAX_WIDTH, height + 200, BufferedImage.TYPE_3BYTE_BGR);
+			img = new BufferedImage(GlancePanel.MAX_WIDTH, height + 100 * config.pixelsPerLine, BufferedImage.TYPE_3BYTE_BGR);
 			logger.debug("Created new image");
 		}
 	}
@@ -172,7 +178,8 @@ public class Minimap {
 		int bgcolor = colorScheme.getDefaultBackground().getRGB();
 		char ch;
 		LineInfo startLine;
-		float weight;
+		float topWeight;
+		float bottomWeight;
 		Lexer lexer = hl.getHighlightingLexer();
 		IElementType tokenType;
 
@@ -188,7 +195,7 @@ public class Minimap {
 		while(tokenType != null) {
 			int start = lexer.getTokenStart();
 			startLine = getLine(start);
-			y = startLine.number * 2;
+			y = startLine.number * config.pixelsPerLine;
 
 			color = getColorForElementType(tokenType, hl, colorScheme);
 
@@ -214,21 +221,43 @@ public class Minimap {
 
 					if(ch == '\n') {
 						x = 0;
-						y += 2;
+						y += config.pixelsPerLine;
 					} else if(ch == '\t') {
 						x += 4;
 					} else {
 						x += 1;
 					}
 
-					weight = CharacterWeight.getWeight(text.charAt(i));
+					topWeight = CharacterWeight.getTopWeight(text.charAt(i));
+					bottomWeight = CharacterWeight.getBottomWeight(text.charAt(i));
 
 					// No point rendering non visible characters.
-					if(weight == 0) continue;
+					if(topWeight == 0) continue;
 
-					if(0 <= x && x < img.getWidth() && 0 <= y && y + 1 <= img.getHeight()) {
-						img.setRGB(x, y, mix(color, bgcolor, weight * 0.3f));
-						img.setRGB(x, y + 1, mix(color, bgcolor, weight));
+					if(0 <= x && x < img.getWidth() && 0 <= y && y + config.pixelsPerLine <= img.getHeight()) {
+						switch(config.pixelsPerLine) {
+							case 1:
+								// Cant show whitespace between lines any more. This looks rather ugly...
+								img.setRGB(x, y + 1, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
+								break;
+
+							case 2:
+								// Two lines we make the top line a little lighter to give the illusion of whitespace between lines.
+								img.setRGB(x, y, mix(color, bgcolor, topWeight * 0.5f));
+								img.setRGB(x, y + 1, mix(color, bgcolor, bottomWeight));
+								break;
+							case 3:
+								// Three lines we make the top nearly empty, and fade the bottom a little too
+								img.setRGB(x, y, mix(color, bgcolor, topWeight * 0.3f));
+								img.setRGB(x, y + 1, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
+								img.setRGB(x, y + 2, mix(color, bgcolor, bottomWeight * 0.7f));
+								break;
+							case 4:
+								// Empty top line, Nice blend for everything else
+								img.setRGB(x, y + 1, mix(color, bgcolor, topWeight));
+								img.setRGB(x, y + 2, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
+								img.setRGB(x, y + 3, mix(color, bgcolor, bottomWeight));
+						}
 					}
 				}
 			}

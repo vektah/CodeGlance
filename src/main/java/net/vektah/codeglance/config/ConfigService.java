@@ -23,42 +23,33 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.vektah.codeglance.render;
+package net.vektah.codeglance.config;
 
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import com.intellij.openapi.components.*;
+import com.intellij.util.xmlb.XmlSerializerUtil;
+import net.vektah.codeglance.Observable;
+import org.jetbrains.annotations.Nullable;
 
-import static org.testng.Assert.*;
 
-/**
- * Some basic sanity tests that the weight generation function works OK.
- */
-public class CharacterWeightTest {
-	@Test public void test_lower_boundaries() {
-		assertEquals(0, CharacterWeight.getTopWeight((char) 0), 0.001);
-		assertEquals(0, CharacterWeight.getTopWeight((char) 1), 0.001);
-		assertEquals(0, CharacterWeight.getTopWeight((char) 32), 0.001);
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 33));
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 126));
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 127));
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 128));
+@State(
+	name = "CodeGlance",
+	storages = {
+		@Storage(id="other", file = StoragePathMacros.APP_CONFIG + "/CodeGlance.xml")
+	}
+)
+public class ConfigService extends Observable<ConfigChangeListener> implements PersistentStateComponent<Config> {
+	private Config config = new Config();
+
+	public ConfigService() {
+		super(ConfigChangeListener.class);
 	}
 
-	@DataProvider(name="Test-Relative-Weights") public static Object[][] testRelativeWeights() {
-		return new Object[][] {
-			{'.', ','},
-			{'1', '8'},
-			{'.', 'a'},
-			{',', '1'},
-		};
+	@Nullable @Override public Config getState() {
+		return config;
 	}
 
-	@Test(dataProvider = "Test-Relative-Weights") public void test_relative_weights_are_sane(char a, char b) {
-		assertTrue(CharacterWeight.getTopWeight(a) + CharacterWeight.getBottomWeight(a) < CharacterWeight.getTopWeight(b) + CharacterWeight.getBottomWeight(b));
-	}
-
-	@Test public void test_known_values() {
-		assertEquals(0.2458f, CharacterWeight.getTopWeight('v'));
-		assertEquals(0.3538f, CharacterWeight.getBottomWeight('v'));
+	@Override public void loadState(Config config) {
+		XmlSerializerUtil.copyBean(config, this.config);
 	}
 }
+

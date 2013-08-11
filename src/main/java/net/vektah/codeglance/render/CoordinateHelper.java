@@ -37,7 +37,13 @@ public class CoordinateHelper {
 	private int lastVisibleLine = 0;
 	private float hidpiScale = 1.0f;
     private int srcHeight = 0;
-	public static final int PIXELS_PER_LINE = 2;
+	private int pixelsPerLine = 2;
+
+	public CoordinateHelper setPixelsPerLine(int pixelsPerLine) {
+		this.pixelsPerLine = pixelsPerLine;
+
+		return this;
+	}
 
 	public CoordinateHelper setPanelHeight(int panelHeight) {
 		this.panelHeight = panelHeight;
@@ -79,7 +85,7 @@ public class CoordinateHelper {
 	 * @return how far through the current document the user is as a percentage (0-1)
 	 */
 	public float getPercentComplete() {
-		return firstVisibleLine / (float)(imageHeight / PIXELS_PER_LINE - (lastVisibleLine - firstVisibleLine));
+		return firstVisibleLine / (float)(imageHeight / pixelsPerLine - (lastVisibleLine - firstVisibleLine));
 	}
 
 	private int getOffset() {
@@ -100,7 +106,6 @@ public class CoordinateHelper {
 
     /**
      * Calculates the coordinates to draw the image onto within the frame. Make sure getImageSource has been called first!
-     * @return
      */
 	public Rectangle getImageDestination() {
 		return new Rectangle(0, 0, panelWidth, Math.min(srcHeight, panelHeight));
@@ -110,9 +115,9 @@ public class CoordinateHelper {
 		int offset = getOffset();
 		return new Rectangle(
 			0,
-			(int)((firstVisibleLine * PIXELS_PER_LINE - offset) / hidpiScale),
+			(int)((firstVisibleLine * pixelsPerLine - offset) / hidpiScale),
 			panelWidth - 1,
-			(int)((lastVisibleLine - firstVisibleLine) * PIXELS_PER_LINE / hidpiScale)
+			(int)((lastVisibleLine - firstVisibleLine) * pixelsPerLine / hidpiScale)
 		);
 	}
 
@@ -124,16 +129,16 @@ public class CoordinateHelper {
 
 		// If the panel is 1:1 or has not been generated yet then mapping straight to the line that was selected is a good way to go.
 		if(imageHeight < panelHeight) {
-			return new LogicalPosition((int) (y / CoordinateHelper.PIXELS_PER_LINE * hidpiScale), x);
+			return new LogicalPosition((int) (y / pixelsPerLine * hidpiScale), x);
 		} else {
 			if (dragged) {
 				// When dragging use a percentage based position, 50% on window = 50% on document
-				return new LogicalPosition((int) (y / (float)panelHeight * imageHeight) / 2, x);
+				return new LogicalPosition((int) (y / (float)panelHeight * imageHeight) / pixelsPerLine, x);
 			} else {
-				int offsetLines = getOffset() / CoordinateHelper.PIXELS_PER_LINE;
+				int offsetLines = getOffset() / pixelsPerLine;
 				// But for clicks we should take into account where the window currently is and adjust from there so
 				// the user gets taken to the code block they clicked on.
-				return new LogicalPosition( (int) (y / CoordinateHelper.PIXELS_PER_LINE * hidpiScale) + offsetLines, x);
+				return new LogicalPosition( (int) (y / pixelsPerLine * hidpiScale) + offsetLines, x);
 			}
 		}
 	}

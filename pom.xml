@@ -81,6 +81,18 @@
 			<version>12.1.4</version>
 		</dependency>
 		<dependency>
+			<groupId>net.vektah</groupId>
+			<scope>provided</scope>
+			<artifactId>intellij-forms_rt</artifactId>
+			<version>12.1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>net.vektah</groupId>
+			<scope>provided</scope>
+			<artifactId>intellij-javac2</artifactId>
+			<version>12.1.4</version>
+		</dependency>
+		<dependency>
 			<groupId>org.mockito</groupId>
 			<scope>test</scope>
 			<artifactId>mockito-core</artifactId>

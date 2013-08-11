@@ -27,12 +27,22 @@ package net.vektah.codeglance.render;
 
 import com.intellij.openapi.util.text.StringUtil;
 import net.vektah.codeglance.GlancePanel;
+import net.vektah.codeglance.config.Config;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import static junit.framework.Assert.*;
 
 public class GlanceImageTest {
+	private Minimap img;
+
+	@BeforeMethod public void setUp() {
+		Config config = new Config();
+		config.pixelsPerLine = 2;
+		img = new Minimap(config);
+	}
+
 	@DataProvider(name="Test-Dimensions") public static Object[][] testDimensions() {
 		return new Object[][] {
 			{"", 2},
@@ -45,15 +55,11 @@ public class GlanceImageTest {
 	}
 
 	@Test(dataProvider = "Test-Dimensions") public void test_calculate_dimensions(CharSequence string, int height) {
-		Minimap img = new Minimap();
-
 		img.updateDimensions(string);
 		assertEquals(height, img.height);
 	}
 
 	@Test public void test_calculate_dimensions_resize() {
-		Minimap img = new Minimap();
-
 		img.updateDimensions("ASDF\nHJKL");
 
 		assertEquals(GlancePanel.MAX_WIDTH, img.img.getWidth());
@@ -92,8 +98,6 @@ public class GlanceImageTest {
 	}
 
 	@Test(dataProvider = "Test-Newlines")  public void test_newline_search(CharSequence input, int i, int expected_number, int expected_begin, int expected_end) {
-		Minimap img = new Minimap();
-
 		img.updateDimensions(input);
 
 		Minimap.LineInfo line = img.getLine(i);

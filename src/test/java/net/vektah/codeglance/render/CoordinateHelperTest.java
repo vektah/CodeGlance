@@ -94,4 +94,30 @@ public class CoordinateHelperTest {
 		// Click 75%, should be 50%
 		assertEquals(87, helper.getPositionFor(0, 75, false).line);
 	}
+
+	@Test public void test_long_file_1_pixel_per_line_at_end() {
+		// 100 lines, Image is twice as large as the panel, and the editor is at the end of the file.
+		helper.setPanelHeight(100).setImageHeight(200).setPixelsPerLine(1).setFirstVisibleLine(100).setLastVisibleLine(200);
+
+		// Dragging should always be percentage based:
+		// Drag 25%, should be 25%
+		assertEquals(50, helper.getPositionFor(0, 25, true).line);
+
+		// Drag half way, should be 50%
+		assertEquals(100, helper.getPositionFor(0, 50, true).line);
+
+		// Drag 75% should be 75%
+		assertEquals(150, helper.getPositionFor(0, 75, true).line);
+
+		// Clicking however, should take you to the line you clicked on.
+		// Click 25%, should be 12.5%
+		assertEquals(125, helper.getPositionFor(0, 25, false).line);
+
+		// Click 50%, should be 25%
+		assertEquals(150, helper.getPositionFor(0, 50, false).line);
+
+		// Click 75%, should be 50%
+		assertEquals(175, helper.getPositionFor(0, 75, false).line);
+	}
+
 }

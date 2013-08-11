@@ -25,10 +25,14 @@
 
 package net.vektah.codeglance;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ScrollType;
-import com.intellij.openapi.editor.event.*;
+import com.intellij.openapi.editor.event.DocumentAdapter;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.VisibleAreaEvent;
+import com.intellij.openapi.editor.event.VisibleAreaListener;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
@@ -36,6 +40,8 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
+import net.vektah.codeglance.config.ConfigChangeListener;
+import net.vektah.codeglance.config.ConfigService;
 import net.vektah.codeglance.render.CoordinateHelper;
 import net.vektah.codeglance.render.Minimap;
 import net.vektah.codeglance.render.RenderTask;
@@ -43,7 +49,10 @@ import net.vektah.codeglance.render.TaskRunner;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Array;
 
 /**
@@ -62,12 +71,14 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private Boolean updatePending = false;
 	private boolean dirty = false;
 	private CoordinateHelper coords = new CoordinateHelper();
+	private ConfigService configService = ServiceManager.getService(ConfigService.class);
 
 	public GlancePanel(Project project, FileEditor fileEditor, JPanel container, TaskRunner runner) {
 		this.runner = runner;
 		this.editor = ((TextEditor) fileEditor).getEditor();
 		this.container = container;
 		this.project = project;
+		coords.setPixelsPerLine(configService.getState().pixelsPerLine);
 
 		container.addComponentListener(new ComponentAdapter() {
 			@Override public void componentResized(ComponentEvent componentEvent) {
@@ -83,6 +94,13 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 			}
 		});
 
+		configService.add(new ConfigChangeListener() {
+			@Override public void configChanged() {
+				coords.setPixelsPerLine(configService.getState().pixelsPerLine);
+				updateImage();
+			}
+		});
+
 		editor.getScrollingModel().addVisibleAreaListener(this);
 		MouseListener listener = new MouseListener();
 		addMouseListener(listener);
@@ -90,7 +108,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
 		updateSize();
 		for(int i = 0; i < Array.getLength(minimaps); i++) {
-			minimaps[i] = new Minimap();
+			minimaps[i] = new Minimap(configService.getState());
 		}
 		updateImage();
 	}

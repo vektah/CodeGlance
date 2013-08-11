@@ -39,7 +39,7 @@ public class TaskRunnerTest {
 		runner.add(task);
 
 		try {
-			Thread.currentThread().sleep(50);
+			Thread.sleep(50);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

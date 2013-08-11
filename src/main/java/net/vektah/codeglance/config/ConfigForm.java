@@ -33,11 +33,11 @@ import javax.swing.*;
 import java.awt.*;
 
 public class ConfigForm {
-	private JComboBox<Integer> pixelsPerLine;
+	private JComboBox pixelsPerLine;
 	private JPanel rootPanel;
 
 	public ConfigForm() {
-		pixelsPerLine.setModel(new DefaultComboBoxModel<Integer>(new Integer[]{1, 2, 3, 4}));
+		pixelsPerLine.setModel(new DefaultComboBoxModel(new Integer[]{1, 2, 3, 4}));
 	}
 
 	public JPanel getRoot() {

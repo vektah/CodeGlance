@@ -130,7 +130,12 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	 * Fires off a new task to the worker thread. This should only be called from the ui thread.
 	 */
 	private void updateImage() {
-		synchronized (updatePending) {
+		PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
+		if (file == null) {
+			return;
+		}
+
+		synchronized (this) {
 			// If we have already sent a rendering job off to get processed then first we need to wait for it to finish.
 			// see updateComplete for dirty handling. The is that there will be fast updates plus one final update to
 			// ensure accuracy, dropping any requests in the middle.
@@ -143,7 +148,6 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
 		if(project.isDisposed()) return;
 
-		PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
 		SyntaxHighlighter hl = SyntaxHighlighterFactory.getSyntaxHighlighter(file.getLanguage(), project, file.getVirtualFile());
 
 		nextBuffer = activeBuffer == 0 ? 1 : 0;
@@ -156,7 +160,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	}
 
 	private void updateComplete() {
-		synchronized (updatePending) {
+		synchronized (this) {
 			updatePending = false;
 		}
 

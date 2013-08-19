@@ -10,7 +10,7 @@
 	</description>
 
 	<change-notes><![CDATA[
-		<h3>1.2.2: Scale fixes
+		<h3>1.2.2: Added scale config item!
 		<ul>
 			<li>Fixed an NPE in PhpStorm</li>
 			<li>Fixed clicking on a section of code in a long file, dragging still behaves the same with percentage based movement.</li>

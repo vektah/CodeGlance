@@ -130,6 +130,8 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	 * Fires off a new task to the worker thread. This should only be called from the ui thread.
 	 */
 	private void updateImage() {
+		if(project.isDisposed()) return;
+
 		PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
 		if (file == null) {
 			return;
@@ -145,8 +147,6 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 			}
 			updatePending = true;
 		}
-
-		if(project.isDisposed()) return;
 
 		SyntaxHighlighter hl = SyntaxHighlighterFactory.getSyntaxHighlighter(file.getLanguage(), project, file.getVirtualFile());
 

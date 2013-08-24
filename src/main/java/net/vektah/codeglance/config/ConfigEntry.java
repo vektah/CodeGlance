@@ -55,13 +55,15 @@ public class ConfigEntry implements Configurable {
 	@Override public boolean isModified() {
 		if (form == null) return false;
 
-		return config.pixelsPerLine != form.getPixelsPerLine();
+		return config.pixelsPerLine != form.getPixelsPerLine() ||
+			config.disabled != form.isDisabled();
 	}
 
 	@Override public void apply() throws ConfigurationException {
 		if(form == null) return;
 
 		config.pixelsPerLine = form.getPixelsPerLine();
+		config.disabled = form.isDisabled();
 		configService.dispatch().configChanged();
 	}
 
@@ -69,6 +71,7 @@ public class ConfigEntry implements Configurable {
 		if(form == null) return;
 
 		form.setPixelsPerLine(config.pixelsPerLine);
+		form.setDisabled(config.disabled);
 	}
 
 	@Override public void disposeUIResources() {

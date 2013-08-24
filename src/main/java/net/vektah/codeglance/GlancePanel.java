@@ -40,6 +40,7 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
+import net.vektah.codeglance.config.Config;
 import net.vektah.codeglance.config.ConfigChangeListener;
 import net.vektah.codeglance.config.ConfigService;
 import net.vektah.codeglance.render.CoordinateHelper;
@@ -72,13 +73,13 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private boolean dirty = false;
 	private CoordinateHelper coords = new CoordinateHelper();
 	private ConfigService configService = ServiceManager.getService(ConfigService.class);
+	private boolean disabled = false;
 
 	public GlancePanel(Project project, FileEditor fileEditor, JPanel container, TaskRunner runner) {
 		this.runner = runner;
 		this.editor = ((TextEditor) fileEditor).getEditor();
 		this.container = container;
 		this.project = project;
-		coords.setPixelsPerLine(configService.getState().pixelsPerLine);
 
 		container.addComponentListener(new ComponentAdapter() {
 			@Override public void componentResized(ComponentEvent componentEvent) {
@@ -96,10 +97,14 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
 		configService.add(new ConfigChangeListener() {
 			@Override public void configChanged() {
-				coords.setPixelsPerLine(configService.getState().pixelsPerLine);
+				readConfig();
 				updateImage();
+				updateSize();
+				GlancePanel.this.revalidate();
+				GlancePanel.this.repaint();
 			}
 		});
+		readConfig();
 
 		editor.getScrollingModel().addVisibleAreaListener(this);
 		MouseListener listener = new MouseListener();
@@ -113,23 +118,34 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		updateImage();
 	}
 
+	private void readConfig() {
+		Config config = configService.getState();
+		disabled = config.disabled;
+		coords.setPixelsPerLine(config.pixelsPerLine);
+	}
+
 	/**
 	 * Adjusts the panels size to be a percentage of the total window
 	 */
 	private void updateSize() {
-		// Window should not take up more then 10%
-		int percentageWidth = container.getWidth() / 10;
-		// but shouldn't be too wide either. 100 chars wide should be enough to visualize a code outline.
-		int totalWidth = Math.min(percentageWidth, MAX_WIDTH);
+		if(disabled) {
+			setPreferredSize(new Dimension(0, 0));
+		} else {
+			// Window should not take up more then 10%
+			int percentageWidth = container.getWidth() / 10;
+			// but shouldn't be too wide either. 100 chars wide should be enough to visualize a code outline.
+			int totalWidth = Math.min(percentageWidth, MAX_WIDTH);
 
-		Dimension size = new Dimension(totalWidth, 0);
-		setPreferredSize(size);
+			Dimension size = new Dimension(totalWidth, 0);
+			setPreferredSize(size);
+		}
 	}
 
 	/**
 	 * Fires off a new task to the worker thread. This should only be called from the ui thread.
 	 */
 	private void updateImage() {
+		if(disabled) return;
 		if(project.isDisposed()) return;
 
 		PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());

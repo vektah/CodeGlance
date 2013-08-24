@@ -35,6 +35,7 @@ import java.awt.*;
 public class ConfigForm {
 	private JComboBox pixelsPerLine;
 	private JPanel rootPanel;
+	private JCheckBox disabled;
 
 	public ConfigForm() {
 		pixelsPerLine.setModel(new DefaultComboBoxModel(new Integer[]{1, 2, 3, 4}));
@@ -50,6 +51,14 @@ public class ConfigForm {
 
 	public void setPixelsPerLine(int pixelsPerLine) {
 		this.pixelsPerLine.setSelectedIndex(pixelsPerLine - 1);
+	}
+
+	public boolean isDisabled() {
+		return disabled.getModel().isSelected();
+	}
+
+	public void setDisabled(boolean isDisabled) {
+		disabled.getModel().setSelected(isDisabled);
 	}
 
 	{
@@ -68,18 +77,24 @@ public class ConfigForm {
 	 */
 	private void $$$setupUI$$$() {
 		rootPanel = new JPanel();
-		rootPanel.setLayout(new GridLayoutManager(2, 3, new Insets(0, 0, 0, 0), -1, -1));
+		rootPanel.setLayout(new GridLayoutManager(3, 3, new Insets(0, 0, 0, 0), -1, -1));
 		final JLabel label1 = new JLabel();
 		label1.setText("Pixels Per Line");
 		label1.setDisplayedMnemonic('P');
 		label1.setDisplayedMnemonicIndex(0);
 		rootPanel.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-		final Spacer spacer1 = new Spacer();
-		rootPanel.add(spacer1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
 		pixelsPerLine = new JComboBox();
 		rootPanel.add(pixelsPerLine, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(200, 24), null, 0, false));
+		final Spacer spacer1 = new Spacer();
+		rootPanel.add(spacer1, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+		final JLabel label2 = new JLabel();
+		label2.setText("Disabled");
+		rootPanel.add(label2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
 		final Spacer spacer2 = new Spacer();
-		rootPanel.add(spacer2, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+		rootPanel.add(spacer2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+		disabled = new JCheckBox();
+		disabled.setText("");
+		rootPanel.add(disabled, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
 		label1.setLabelFor(pixelsPerLine);
 	}
 

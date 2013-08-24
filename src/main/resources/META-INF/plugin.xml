@@ -13,6 +13,7 @@
 		<h3>1.2.3: Added scale config item!
 		<ul>
 			<li>Fix regression of 'Already disposed'</li>
+			<li>Added ability to disable CodeGlance without restarting</li>
 		</ul>
 		<h3>1.2.2: Added scale config item!
 		<ul>

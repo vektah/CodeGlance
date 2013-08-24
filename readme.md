@@ -11,8 +11,8 @@ Intelij plugin that displays a code mini-map similar to the one found in Sublime
  - Scrollable!
  - Embedded into editor window
 
-Dracula:
-![Dracula](https://raw.github.com/Vektah/CodeGlance/master/pub/dracula.png)
+Dark:
+![Dracula](https://raw.github.com/Vektah/CodeGlance/master/pub/dark.png)
 
-Default:
-![Default](https://raw.github.com/Vektah/CodeGlance/master/pub/default.png)
+Light:
+![Default](https://raw.github.com/Vektah/CodeGlance/master/pub/light.png)

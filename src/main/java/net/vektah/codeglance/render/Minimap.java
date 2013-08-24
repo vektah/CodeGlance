@@ -54,7 +54,7 @@ public class Minimap {
 	}
 
 	/**
-	 * Scans over the entire document once to work out the required dimensions then rebuilds the image if nessicary.
+	 * Scans over the entire document once to work out the required dimensions then rebuilds the image if necessary.
 	 *
 	 * Because java chars are UTF-8 16 bit chars this function should be UTF safe in the 2 byte range, which is all intellij
 	 * seems to handle anyway....
@@ -212,52 +212,48 @@ public class Minimap {
 				if(x > GlancePanel.MAX_WIDTH) break;
 			}
 
-			// Looks like this line is longer then we will ever display, lets not bother trying to render.
-			if(x <= GlancePanel.MAX_WIDTH) {
+			// Render whole token, make sure multi lines are handled gracefully.
+			for(int i = start; i < lexer.getTokenEnd(); i++) {
+				ch = text.charAt(i);
 
-				// Render whole token, make sure multi lines are handled gracefully.
-				for(int i = start; i < lexer.getTokenEnd(); i++) {
-					ch = text.charAt(i);
+				if(ch == '\n') {
+					x = 0;
+					y += config.pixelsPerLine;
+				} else if(ch == '\t') {
+					x += 4;
+				} else {
+					x += 1;
+				}
 
-					if(ch == '\n') {
-						x = 0;
-						y += config.pixelsPerLine;
-					} else if(ch == '\t') {
-						x += 4;
-					} else {
-						x += 1;
-					}
+				topWeight = CharacterWeight.getTopWeight(text.charAt(i));
+				bottomWeight = CharacterWeight.getBottomWeight(text.charAt(i));
 
-					topWeight = CharacterWeight.getTopWeight(text.charAt(i));
-					bottomWeight = CharacterWeight.getBottomWeight(text.charAt(i));
+				// No point rendering non visible characters.
+				if(topWeight == 0) continue;
 
-					// No point rendering non visible characters.
-					if(topWeight == 0) continue;
+				if(0 <= x && x < img.getWidth() && 0 <= y && y + config.pixelsPerLine < img.getHeight()) {
+					switch(config.pixelsPerLine) {
+						case 1:
+							// Cant show whitespace between lines any more. This looks rather ugly...
+							img.setRGB(x, y + 1, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
+							break;
 
-					if(0 <= x && x < img.getWidth() && 0 <= y && y + config.pixelsPerLine <= img.getHeight()) {
-						switch(config.pixelsPerLine) {
-							case 1:
-								// Cant show whitespace between lines any more. This looks rather ugly...
-								img.setRGB(x, y + 1, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
-								break;
-
-							case 2:
-								// Two lines we make the top line a little lighter to give the illusion of whitespace between lines.
-								img.setRGB(x, y, mix(color, bgcolor, topWeight * 0.5f));
-								img.setRGB(x, y + 1, mix(color, bgcolor, bottomWeight));
-								break;
-							case 3:
-								// Three lines we make the top nearly empty, and fade the bottom a little too
-								img.setRGB(x, y, mix(color, bgcolor, topWeight * 0.3f));
-								img.setRGB(x, y + 1, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
-								img.setRGB(x, y + 2, mix(color, bgcolor, bottomWeight * 0.7f));
-								break;
-							case 4:
-								// Empty top line, Nice blend for everything else
-								img.setRGB(x, y + 1, mix(color, bgcolor, topWeight));
-								img.setRGB(x, y + 2, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
-								img.setRGB(x, y + 3, mix(color, bgcolor, bottomWeight));
-						}
+						case 2:
+							// Two lines we make the top line a little lighter to give the illusion of whitespace between lines.
+							img.setRGB(x, y, mix(color, bgcolor, topWeight * 0.5f));
+							img.setRGB(x, y + 1, mix(color, bgcolor, bottomWeight));
+							break;
+						case 3:
+							// Three lines we make the top nearly empty, and fade the bottom a little too
+							img.setRGB(x, y, mix(color, bgcolor, topWeight * 0.3f));
+							img.setRGB(x, y + 1, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
+							img.setRGB(x, y + 2, mix(color, bgcolor, bottomWeight * 0.7f));
+							break;
+						case 4:
+							// Empty top line, Nice blend for everything else
+							img.setRGB(x, y + 1, mix(color, bgcolor, topWeight));
+							img.setRGB(x, y + 2, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
+							img.setRGB(x, y + 3, mix(color, bgcolor, bottomWeight));
 					}
 				}
 			}

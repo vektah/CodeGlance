@@ -25,6 +25,7 @@
 
 package net.vektah.codeglance.render;
 
+import com.intellij.openapi.editor.FoldRegion;
 import com.intellij.openapi.util.text.StringUtil;
 import net.vektah.codeglance.GlancePanel;
 import net.vektah.codeglance.config.Config;
@@ -32,7 +33,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
 
 public class GlanceImageTest {
 	private Minimap img;
@@ -55,24 +56,24 @@ public class GlanceImageTest {
 	}
 
 	@Test(dataProvider = "Test-Dimensions") public void test_calculate_dimensions(CharSequence string, int height) {
-		img.updateDimensions(string);
+		img.updateDimensions(string, new FoldRegion[] {});
 		assertEquals(height, img.height);
 	}
 
 	@Test public void test_calculate_dimensions_resize() {
-		img.updateDimensions("ASDF\nHJKL");
+		img.updateDimensions("ASDF\nHJKL", new FoldRegion[] {});
 
 		assertEquals(GlancePanel.MAX_WIDTH, img.img.getWidth());
 		assertEquals(204, img.img.getHeight());
 
 		// Only added a little, so image should not get regenerated.
-		img.updateDimensions("asdfjkl;asdfjkl;\nasdfjlkasdfjkl\nasdfjkl;a;sdfjkl");
+		img.updateDimensions("asdfjkl;asdfjkl;\nasdfjlkasdfjkl\nasdfjkl;a;sdfjkl", new FoldRegion[] {});
 
 		assertEquals(GlancePanel.MAX_WIDTH, img.img.getWidth());
 		assertEquals(204, img.img.getHeight());
 
 		// Went over the existing image boundary so a new one should be created.
-		img.updateDimensions(StringUtil.repeat("\na", 150));
+		img.updateDimensions(StringUtil.repeat("\na", 150), new FoldRegion[] {});
 
 		assertEquals(GlancePanel.MAX_WIDTH, img.img.getWidth());
 		assertEquals(502, img.img.getHeight());
@@ -98,7 +99,7 @@ public class GlanceImageTest {
 	}
 
 	@Test(dataProvider = "Test-Newlines")  public void test_newline_search(CharSequence input, int i, int expected_number, int expected_begin, int expected_end) {
-		img.updateDimensions(input);
+		img.updateDimensions(input, new FoldRegion[] {});
 
 		Minimap.LineInfo line = img.getLine(i);
 

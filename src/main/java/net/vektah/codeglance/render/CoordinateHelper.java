@@ -25,19 +25,18 @@
 
 package net.vektah.codeglance.render;
 
-import com.intellij.openapi.editor.LogicalPosition;
-
 import java.awt.*;
+
 
 public class CoordinateHelper {
 	private int panelHeight = 0;
 	private int panelWidth = 0;
-	private int imageHeight = 0;
-	private int firstVisibleLine = 0;
-	private int lastVisibleLine = 0;
 	private float hidpiScale = 1.0f;
     private int srcHeight = 0;
 	private int pixelsPerLine = 2;
+	private int imageHeight;
+	private Minimap map;
+	private double complete;
 
 	public CoordinateHelper setPixelsPerLine(int pixelsPerLine) {
 		this.pixelsPerLine = pixelsPerLine;
@@ -57,20 +56,9 @@ public class CoordinateHelper {
 		return this;
 	}
 
-	public CoordinateHelper setImageHeight(int imageHeight) {
-		this.imageHeight = imageHeight;
-
-		return this;
-	}
-
-	public CoordinateHelper setFirstVisibleLine(int firstVisibleLine) {
-		this.firstVisibleLine = firstVisibleLine;
-
-		return this;
-	}
-
-	public CoordinateHelper setLastVisibleLine(int lastVisibleLine) {
-		this.lastVisibleLine = lastVisibleLine;
+	public CoordinateHelper setMinimap(Minimap map) {
+		this.map = map;
+		this.imageHeight = map.height;
 
 		return this;
 	}
@@ -81,14 +69,20 @@ public class CoordinateHelper {
 		return this;
 	}
 
+	public CoordinateHelper setPercentageComplete(double complete) {
+		this.complete = complete;
+
+		return this;
+	}
+
 	/**
 	 * @return how far through the current document the user is as a percentage (0-1)
 	 */
-	public float getPercentComplete() {
-		return firstVisibleLine / (float)(imageHeight / pixelsPerLine - (lastVisibleLine - firstVisibleLine));
+	public double getPercentComplete() {
+		return complete;
 	}
 
-	private int getOffset() {
+	public int getOffset() {
 		// If the panel is 1:1 then just draw everything in the top left hand corner, otherwise we need to gracefully scroll.
 		if(imageHeight > panelHeight * hidpiScale) {
 			return (int) ((imageHeight - panelHeight * hidpiScale) * getPercentComplete());
@@ -111,35 +105,50 @@ public class CoordinateHelper {
 		return new Rectangle(0, 0, panelWidth, Math.min(srcHeight, panelHeight));
 	}
 
-	public Rectangle getViewport() {
-		int offset = getOffset();
+	public Rectangle getViewport(int firstVisibleLine, int lastVisibleLine) {
 		return new Rectangle(
-			0,
-			(int)((firstVisibleLine * pixelsPerLine - offset) / hidpiScale),
-			panelWidth - 1,
-			(int)((lastVisibleLine - firstVisibleLine) * pixelsPerLine / hidpiScale)
+				0,
+				(int)((firstVisibleLine * pixelsPerLine - getOffset()) / hidpiScale),
+				panelWidth - 1,
+				(int)((lastVisibleLine - firstVisibleLine) * pixelsPerLine / hidpiScale)
 		);
 	}
 
-	public LogicalPosition getPositionFor(int x, int y, boolean dragged) {
-		if(x < 0) x = 0;
+	/**
+	 * Offset: The character offset from the start of file.
+	 * LogicalPosition: This is the actual position within the document.
+	 * ScreenSpace: Raw position the user can see. This is a scrolling window for long documents!
+	 */
+	public int screenSpaceToOffset(int y, boolean dragged) {
 		if(y < 0) y = 0;
-		if(x > panelWidth) x = panelWidth;
 		if(y > panelHeight) y = panelHeight;
+		int line;
 
-		// If the panel is 1:1 or has not been generated yet then mapping straight to the line that was selected is a good way to go.
-		if(imageHeight < panelHeight) {
-			return new LogicalPosition((int) (y / pixelsPerLine * hidpiScale), x);
+		if (imageHeight < panelHeight) {
+			// If the panel is short enough to fit on the screen then 1:1 is good.
+			line = (int) (y / pixelsPerLine * hidpiScale);
+		} else if (dragged) {
+			// If we are dragging, then act like a conventional scroll bar.
+			line = (int) (y / (float)panelHeight * imageHeight) / pixelsPerLine;
 		} else {
-			if (dragged) {
-				// When dragging use a percentage based position, 50% on window = 50% on document
-				return new LogicalPosition((int) (y / (float)panelHeight * imageHeight) / pixelsPerLine, x);
-			} else {
-				int offsetLines = getOffset() / pixelsPerLine;
-				// But for clicks we should take into account where the window currently is and adjust from there so
-				// the user gets taken to the code block they clicked on.
-				return new LogicalPosition( (int) (y / pixelsPerLine * hidpiScale) + offsetLines, x);
-			}
+			// Otherwise 1:1 with an offset so that clicks in long documents line up correctly.
+			line = (int) ((y + getOffset()) / pixelsPerLine * hidpiScale);
 		}
+
+		return map.getOffsetForLine(line);
+	}
+
+	public int offsetToScreenSpace(int offset) {
+		int line = map.getLine(offset).number;
+
+		if (imageHeight < panelHeight) {
+			return (int) (line * pixelsPerLine * hidpiScale);
+		} else {
+			return (int) (line * pixelsPerLine * hidpiScale - getOffset());
+		}
+	}
+
+	public int linesToPixels(int lines) {
+		return (int) (lines * pixelsPerLine * hidpiScale);
 	}
 }

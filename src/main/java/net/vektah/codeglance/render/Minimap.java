@@ -27,6 +27,7 @@ package net.vektah.codeglance.render;
 
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.FoldRegion;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.editor.markup.TextAttributes;
@@ -59,7 +60,7 @@ public class Minimap {
 	 * Because java chars are UTF-8 16 bit chars this function should be UTF safe in the 2 byte range, which is all intellij
 	 * seems to handle anyway....
 	 */
-	public void updateDimensions(CharSequence text) {
+	public void updateDimensions(CharSequence text, FoldRegion[] folding) {
 		int line_length = 0;    // The current line length
 		int longest_line = 1;   // The longest line in the document
 		int lines = 1;          // The total number of lines in the document
@@ -71,6 +72,10 @@ public class Minimap {
 		line_endings.add(-1);
 
 		for (int i = 0, len = text.length(); i < len; i++) {
+			if(isFolded(i, folding)) {
+				continue;
+			}
+
 			ch = text.charAt(i);
 
 			if(ch == '\n' || (ch == '\r' && last != '\n')) {
@@ -100,6 +105,21 @@ public class Minimap {
 			img = new BufferedImage(GlancePanel.MAX_WIDTH, height + 100 * config.pixelsPerLine, BufferedImage.TYPE_3BYTE_BGR);
 			logger.debug("Created new image");
 		}
+	}
+
+	/**
+	 * @return the offset that a line starts at within the file.
+	 */
+	public int getOffsetForLine(int line) {
+		if (line < 1) {
+			return line_endings.get(1);
+		}
+
+		if (line >= line_endings.size()) {
+			return line_endings.get(line_endings.size() - 1);
+		}
+
+		return line_endings.get(line);
 	}
 
 	/**
@@ -164,15 +184,31 @@ public class Minimap {
 	}
 
 	/**
+	 * Checks if a given position is within a folded region
+	 * @param position  the offset from the start of file in chars
+	 * @param regions   the array of regions to check against
+	 * @return true if the given position is folded.
+	 */
+	private boolean isFolded(int position, FoldRegion[] regions) {
+		for (FoldRegion region: regions) {
+			if (!region.isExpanded() && region.getStartOffset() < position && position < region.getEndOffset()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Internal worker function to update the minimap image
 	 *
 	 * @param text          The entire text of the document to render
 	 * @param colorScheme   The users color scheme
 	 * @param hl            The syntax highlighter to use for the language this document is in.
 	 */
-	public void update(CharSequence text, EditorColorsScheme colorScheme, SyntaxHighlighter hl) {
+	public void update(CharSequence text, EditorColorsScheme colorScheme, SyntaxHighlighter hl, FoldRegion[] folding) {
 		logger.debug("Updating file image.");
-		updateDimensions(text);
+		updateDimensions(text, folding);
 
 		int color;
 		int bgcolor = colorScheme.getDefaultBackground().getRGB();
@@ -201,7 +237,12 @@ public class Minimap {
 
 			// Pre-loop to count whitespace from start of line.
 			x = 0;
-			for(int i = startLine.begin; i < start; i++) {
+			for (int i = startLine.begin; i < start; i++) {
+				// Dont count lines inside of folded regions.
+				if (isFolded(i, folding)) {
+					continue;
+				}
+
 				if(text.charAt(i) == '\t') {
 					x += 4;
 				} else {
@@ -214,6 +255,11 @@ public class Minimap {
 
 			// Render whole token, make sure multi lines are handled gracefully.
 			for(int i = start; i < lexer.getTokenEnd(); i++) {
+				// Don't render folds.
+				if (isFolded(i, folding)) {
+					continue;
+				}
+
 				ch = text.charAt(i);
 
 				if(ch == '\n') {

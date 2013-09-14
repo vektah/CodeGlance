@@ -28,6 +28,7 @@ package net.vektah.codeglance;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.FoldRegion;
 import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.editor.event.DocumentAdapter;
 import com.intellij.openapi.editor.event.DocumentEvent;
@@ -74,6 +75,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private CoordinateHelper coords = new CoordinateHelper();
 	private ConfigService configService = ServiceManager.getService(ConfigService.class);
 	private boolean disabled = false;
+	private int lastFoldCount = -1;
 
 	public GlancePanel(Project project, FileEditor fileEditor, JPanel container, TaskRunner runner) {
 		this.runner = runner;
@@ -104,6 +106,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 				GlancePanel.this.repaint();
 			}
 		});
+
 		readConfig();
 
 		editor.getScrollingModel().addVisibleAreaListener(this);
@@ -168,7 +171,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
 		nextBuffer = activeBuffer == 0 ? 1 : 0;
 
-		runner.add(new RenderTask(minimaps[nextBuffer], editor.getDocument().getText(), editor.getColorsScheme(), hl, new Runnable() {
+		runner.add(new RenderTask(minimaps[nextBuffer], editor.getDocument().getText(), editor.getColorsScheme(), hl, editor.getFoldingModel().getAllFoldRegions(), new Runnable() {
 			@Override public void run() {
 				updateComplete();
 			}
@@ -204,6 +207,12 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		return scale;
 	}
 
+	private int getMapYFromEditorY(int y) {
+		int offset = editor.logicalPositionToOffset(editor.xyToLogicalPosition(new Point(0, y)));
+
+		return coords.offsetToScreenSpace(offset);
+	}
+
 	@Override
 	public void paint(Graphics g) {
 		g.setColor(editor.getColorsScheme().getDefaultBackground());
@@ -213,11 +222,14 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		if(activeBuffer >= 0) {
 			Minimap minimap = minimaps[activeBuffer];
 
-			coords.setImageHeight(minimap.height)
+			Rectangle visibleArea = editor.getScrollingModel().getVisibleArea();
+
+			double documentEndY = editor.logicalPositionToXY(editor.offsetToLogicalPosition(editor.getDocument().getTextLength() - 1)).getY();
+
+			coords.setMinimap(minimap)
 				.setPanelHeight(getHeight())
 				.setPanelWidth(getWidth())
-				.setFirstVisibleLine(editor.xyToLogicalPosition(new Point(0, (int) editor.getScrollingModel().getVisibleArea().getY())).line)
-				.setLastVisibleLine(editor.xyToLogicalPosition(new Point(0, (int) editor.getScrollingModel().getVisibleArea().getMaxY())).line)
+				.setPercentageComplete(visibleArea.getMinY() / (documentEndY - (visibleArea.getMaxY() - visibleArea.getMinY())))
 				.setHidpiScale(getHidpiScale());
 
 			Rectangle src = coords.getImageSource();
@@ -229,17 +241,35 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 					src.x, src.y, src.width, src.height,
 					null);
 
-			Rectangle viewport = coords.getViewport();
+
 			g.setColor(Color.GRAY);
 			Graphics2D g2d = (Graphics2D) g;
+
+			int firstVisibleLine =  getMapYFromEditorY((int) visibleArea.getMinY());
+			int height = coords.linesToPixels((int) ((visibleArea.getMaxY() - visibleArea.getMinY()) / editor.getLineHeight()));
+
 			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.40f));
-			g2d.drawRect(viewport.x, viewport.y, viewport.width, viewport.height);
+			g2d.drawRect(0, firstVisibleLine, getWidth(), height);
 			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f));
-			g2d.fillRect(viewport.x, viewport.y, viewport.width, viewport.height);
+			g2d.fillRect(0, firstVisibleLine, getWidth(), height);
 		}
 	}
 
 	@Override public void visibleAreaChanged(VisibleAreaEvent visibleAreaEvent) {
+		// TODO pending http://youtrack.jetbrains.com/issue/IDEABKL-1141 - once fixed this should be a listener
+		int currentFoldCount = 0;
+		for (FoldRegion fold: editor.getFoldingModel().getAllFoldRegions()) {
+			if (!fold.isExpanded()) {
+				currentFoldCount++;
+			}
+		}
+
+		if (currentFoldCount != lastFoldCount) {
+			updateImage();
+		}
+
+		lastFoldCount = currentFoldCount;
+
 		updateSize();
 		repaint();
 	}
@@ -248,12 +278,13 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		@Override public void mouseDragged(MouseEvent e) {
 			// Disable animation when dragging for better experience.
 			editor.getScrollingModel().disableAnimation();
-			editor.getScrollingModel().scrollTo(coords.getPositionFor(e.getX(), e.getY(), true), ScrollType.CENTER);
+
+			editor.getScrollingModel().scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e.getY(), true)), ScrollType.CENTER);
 			editor.getScrollingModel().enableAnimation();
 		}
 
 		@Override public void mouseClicked(MouseEvent e) {
-			editor.getScrollingModel().scrollTo(coords.getPositionFor(e.getX(), e.getY(), false), ScrollType.CENTER);
+			editor.getScrollingModel().scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e.getY(), false)), ScrollType.CENTER);
 		}
 	}
 }

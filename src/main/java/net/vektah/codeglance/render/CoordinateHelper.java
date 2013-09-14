@@ -151,4 +151,12 @@ public class CoordinateHelper {
 	public int linesToPixels(int lines) {
 		return (int) (lines * pixelsPerLine * hidpiScale);
 	}
+
+	public int pixelsToLines(int pixels) {
+		if (imageHeight < panelHeight) {
+			return (int) (pixels / pixelsPerLine * hidpiScale);
+		} else {
+			return (int) (pixels / pixelsPerLine / (panelHeight / (float)imageHeight) * hidpiScale);
+		}
+	}
 }

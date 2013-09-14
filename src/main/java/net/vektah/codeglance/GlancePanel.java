@@ -275,12 +275,20 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	}
 
 	private class MouseListener extends MouseAdapter {
+		private int scrollStart;
+		private int mouseStart;
+
 		@Override public void mouseDragged(MouseEvent e) {
 			// Disable animation when dragging for better experience.
 			editor.getScrollingModel().disableAnimation();
 
-			editor.getScrollingModel().scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e.getY(), true)), ScrollType.CENTER);
+			editor.getScrollingModel().scrollVertically(scrollStart + coords.pixelsToLines(e.getY() - mouseStart) * editor.getLineHeight());
 			editor.getScrollingModel().enableAnimation();
+		}
+
+		@Override public void mousePressed(MouseEvent e) {
+			scrollStart = editor.getScrollingModel().getVerticalScrollOffset();
+			mouseStart = e.getY();
 		}
 
 		@Override public void mouseClicked(MouseEvent e) {

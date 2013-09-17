@@ -74,7 +74,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private boolean dirty = false;
 	private CoordinateHelper coords = new CoordinateHelper();
 	private ConfigService configService = ServiceManager.getService(ConfigService.class);
-	private boolean disabled = false;
+	private Config config;
 	private int lastFoldCount = -1;
 
 	public GlancePanel(Project project, FileEditor fileEditor, JPanel container, TaskRunner runner) {
@@ -122,8 +122,8 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	}
 
 	private void readConfig() {
-		Config config = configService.getState();
-		disabled = config.disabled;
+		config = configService.getState();
+
 		coords.setPixelsPerLine(config.pixelsPerLine);
 	}
 
@@ -131,7 +131,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	 * Adjusts the panels size to be a percentage of the total window
 	 */
 	private void updateSize() {
-		if(disabled) {
+		if (config.disabled) {
 			setPreferredSize(new Dimension(0, 0));
 		} else {
 			// Window should not take up more then 10%
@@ -148,8 +148,8 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	 * Fires off a new task to the worker thread. This should only be called from the ui thread.
 	 */
 	private void updateImage() {
-		if(disabled) return;
-		if(project.isDisposed()) return;
+		if (config.disabled) return;
+		if (project.isDisposed()) return;
 
 		PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
 		if (file == null) {
@@ -160,7 +160,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 			// If we have already sent a rendering job off to get processed then first we need to wait for it to finish.
 			// see updateComplete for dirty handling. The is that there will be fast updates plus one final update to
 			// ensure accuracy, dropping any requests in the middle.
-			if(updatePending) {
+			if (updatePending) {
 				dirty = true;
 				return;
 			}
@@ -183,7 +183,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 			updatePending = false;
 		}
 
-		if(dirty) {
+		if (dirty) {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override public void run() {
 					updateImage();
@@ -200,7 +200,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private float getHidpiScale() {
 		// Work around for apple going full retard with half pixel pixels.
 		Float scale = (Float)Toolkit.getDefaultToolkit().getDesktopProperty("apple.awt.contentScaleFactor");
-		if(scale == null) {
+		if (scale == null) {
 			scale = 1.0f;
 		}
 
@@ -219,7 +219,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		g.fillRect(0, 0, getWidth(), getHeight());
 
 		logger.debug(String.format("Rendering to buffer: %d", activeBuffer));
-		if(activeBuffer >= 0) {
+		if (activeBuffer >= 0) {
 			Minimap minimap = minimaps[activeBuffer];
 
 			Rectangle visibleArea = editor.getScrollingModel().getVisibleArea();
@@ -278,6 +278,8 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		private int scrollStart;
 		private int mouseStart;
 
+
+
 		@Override public void mouseDragged(MouseEvent e) {
 			// Disable animation when dragging for better experience.
 			editor.getScrollingModel().disableAnimation();
@@ -287,12 +289,26 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		}
 
 		@Override public void mousePressed(MouseEvent e) {
+			Rectangle visibleArea = editor.getScrollingModel().getVisibleArea();
+			int firstVisibleLine =  getMapYFromEditorY((int) visibleArea.getMinY());
+			int height = coords.linesToPixels((int) ((visibleArea.getMaxY() - visibleArea.getMinY()) / editor.getLineHeight()));
+
+			int panelY = e.getY() - getY();
+
+			if (config.jumpOnMouseDown && (panelY <= firstVisibleLine || panelY >= (firstVisibleLine + height))) {
+				editor.getScrollingModel().disableAnimation();
+				editor.getScrollingModel().scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e.getY(), false)), ScrollType.CENTER);
+				editor.getScrollingModel().enableAnimation();
+			}
+
 			scrollStart = editor.getScrollingModel().getVerticalScrollOffset();
 			mouseStart = e.getY();
 		}
 
 		@Override public void mouseClicked(MouseEvent e) {
-			editor.getScrollingModel().scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e.getY(), false)), ScrollType.CENTER);
+			if (!config.jumpOnMouseDown) {
+				editor.getScrollingModel().scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e.getY(), false)), ScrollType.CENTER);
+			}
 		}
 	}
 }

@@ -3,7 +3,7 @@
 	<artifactId>CodeGlance</artifactId>
 	<groupId>net.vektah</groupId>
 	<name>CodeGlance</name>
-	<version>1.3.0-pr3</version>
+	<version>1.3.0-rc1</version>
 	<packaging>jar</packaging>
 
 	<repositories>

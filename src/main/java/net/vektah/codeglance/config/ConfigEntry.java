@@ -57,7 +57,8 @@ public class ConfigEntry implements Configurable {
 
 		return config.pixelsPerLine != form.getPixelsPerLine() ||
 			config.disabled != form.isDisabled() ||
-			config.jumpOnMouseDown != form.jumpOnMouseDown();
+			config.jumpOnMouseDown != form.jumpOnMouseDown() ||
+			config.percentageBasedClick != form.percentageBasedClick();
 	}
 
 	@Override public void apply() throws ConfigurationException {
@@ -66,6 +67,7 @@ public class ConfigEntry implements Configurable {
 		config.pixelsPerLine = form.getPixelsPerLine();
 		config.disabled = form.isDisabled();
 		config.jumpOnMouseDown = form.jumpOnMouseDown();
+		config.percentageBasedClick = form.percentageBasedClick();
 		configService.dispatch().configChanged();
 	}
 
@@ -74,7 +76,8 @@ public class ConfigEntry implements Configurable {
 
 		form.setPixelsPerLine(config.pixelsPerLine);
 		form.setDisabled(config.disabled);
-		form.setJumpOnMouseDown(true);
+		form.setJumpOnMouseDown(config.jumpOnMouseDown);
+		form.setPercentageBasedClick(config.percentageBasedClick);
 	}
 
 	@Override public void disposeUIResources() {

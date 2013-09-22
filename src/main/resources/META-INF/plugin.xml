@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Vektah/CodeGlance">
 	<id>net.vektah.codeglance</id>
 	<name>CodeGlance</name>
-	<version>1.3.0</version>
+	<version>1.3.1</version>
 	<vendor email="adam@vektah.net" url="https://github.com/Vektah/CodeGlance">Vektah</vendor>
 
 	<description>
@@ -10,35 +10,36 @@
 	</description>
 
 	<change-notes><![CDATA[
+	    <h3>1.3.1: Fix a NPE in offsetToScreenSpace()</h3>
 		<h3>1.3.0: Folding support
 		<ul>
 			<li>Dragging is now relative to the start point. This means less sudden jumping around</li>
 			<li>This required some fairly heavy changes to the coordinate code.<li>
 		</ul>
-		<h3>1.2.3: Added scale config item!
+		<h3>1.2.3: Added scale config item!</h3>
 		<ul>
 			<li>Fix regression of 'Already disposed'</li>
 			<li>Added ability to disable CodeGlance without restarting</li>
 		</ul>
-		<h3>1.2.2: Added scale config item!
+		<h3>1.2.2: Added scale config item!</h3>
 		<ul>
 			<li>Fixed an NPE in PhpStorm</li>
 			<li>Fixed clicking on a section of code in a long file, dragging still behaves the same with percentage based movement.</li>
 			<li>Pixels per line is now configurable</li>
 		</ul>
-		<h3>1.2.1: Scale fixes
+		<h3>1.2.1: Scale fixes</h3>
 		<ul>
 			<li>Fixed a rendering issue for osx with vertical stretching.</li>
 			<li>Fixes stretching of the view area when looking at large files.</li>
 			<li>Increased viewport visibility a touch.</li>
 		</ul>
-		<h3>1.2: Smaller with transparency
+		<h3>1.2: Smaller with transparency</h3>
 		<ul>
 			<li>Now uses a transparent selection box and the maximum width is limited to 100 chars. This will probably become configurable</li>
 			<li>Increased the number of render jobs that can be in the queue</li>
 			<li>Improved handling of very long lines.</li>
 		</ul>
-		<h3>1.1a: Misc fixes
+		<h3>1.1a: Misc fixes</h3>
 		<ul>
 			<li>Use new BufferedImage instead of UiUtil for Idea 11.x compatibility.</li>
 			<li>Limited panel injection only to text editors</li>

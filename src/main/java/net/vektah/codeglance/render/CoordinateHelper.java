@@ -135,10 +135,14 @@ public class CoordinateHelper {
 			line = (int) ((y + getOffset()) / pixelsPerLine * hidpiScale);
 		}
 
+		if (map == null) return line * pixelsPerLine;
+
 		return map.getOffsetForLine(line);
 	}
 
 	public int offsetToScreenSpace(int offset) {
+		if (map == null) return offset / pixelsPerLine;
+
 		int line = map.getLine(offset).number;
 
 		if (imageHeight < panelHeight) {

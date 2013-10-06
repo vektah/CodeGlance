@@ -11,6 +11,7 @@ Intelij plugin that displays a zoomed out overview or minimap similar to the one
  - Color rendering using intelij's tokenizer
  - Scrollable!
  - Embedded into editor window
+ - Complete replacement for Code Outline that supports new Intellij builds.
 
 Dark:
 ![Dracula](https://raw.github.com/Vektah/CodeGlance/master/pub/dark.png)

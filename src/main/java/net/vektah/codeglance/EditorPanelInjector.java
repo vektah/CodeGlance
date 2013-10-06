@@ -33,6 +33,7 @@ import net.vektah.codeglance.render.TaskRunner;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.*;
 
 /**
  * Injects a panel into any newly created editors.
@@ -41,6 +42,7 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 	private Project project;
 	private Logger logger = Logger.getInstance(getClass());
 	private TaskRunner runner;
+	private Map<FileEditor, GlancePanel> panels = new HashMap<FileEditor, GlancePanel>();
 
 	public EditorPanelInjector(Project project, TaskRunner runner) {
 		this.project = project;
@@ -49,7 +51,6 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 
 	@Override
 	public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
-
 		// Seems there is a case where multiple split panes can have the same file open and getSelectedEditor, and even
 		// getEditors(virtualVile) return only one of them... So shotgun approach here.
 		FileEditor[] editors = fileEditorManager.getAllEditors();
@@ -83,7 +84,8 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 			// Ok we finally found the actual editor layout. Now make sure we haven't already injected into this editor.
 			if(innerLayout.getLayoutComponent(BorderLayout.LINE_END) == null) {
 				GlancePanel glancePanel = new GlancePanel(project, editor, panel, runner);
-				panel.add(glancePanel, BorderLayout.LINE_END);;
+				panel.add(glancePanel, BorderLayout.LINE_END);
+				panels.put(editor, glancePanel);
 			} else {
 				logger.debug("I07: Injection skipped. Looks like we have already injected something here.");
 			}
@@ -93,8 +95,50 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 			}
 	}
 
+	private void uninject(FileEditor editor) {
+		if(!(editor instanceof TextEditor)) {
+			logger.debug("I01: Uninjection failed, only text editors are supported currently.");
+			return;
+		}
+
+		try {
+			JPanel outerPanel = (JPanel)editor.getComponent();
+			BorderLayout outerLayout = (BorderLayout)outerPanel.getLayout();
+			JLayeredPane pane = (JLayeredPane)outerLayout.getLayoutComponent(BorderLayout.CENTER);
+			JPanel panel = (JPanel)pane.getComponent(1);
+			BorderLayout innerLayout = (BorderLayout)panel.getLayout();
+
+			// Ok we finally found the actual editor layout. Now make sure we haven't already injected into this editor.
+			Component glancePanel = innerLayout.getLayoutComponent(BorderLayout.LINE_END);
+			if (glancePanel != null) {
+				panel.remove(glancePanel);
+			}
+		} catch(ClassCastException e) {
+			logger.warn(String.format("Uninjection failed '%s' on line %d.", e.getMessage(), e.getStackTrace()[0].getLineNumber()));
+			return;
+		}
+	}
+
 	@Override
-	public void fileClosed(FileEditorManager fileEditorManager, VirtualFile virtualFile) { }
+	public void fileClosed(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
+		// Again we don't know which EDITOR was closed, just the file - which could be shared between some editors that
+		// are still open. Lets play 'spot the missing editor'.
+		Set<FileEditor> unseen = new HashSet<FileEditor>(panels.keySet());
+
+		for(FileEditor editor: fileEditorManager.getAllEditors()) {
+			if (unseen.contains(editor)) {
+				unseen.remove(editor);
+			}
+		}
+
+		GlancePanel panel;
+		for (FileEditor editor: unseen) {
+			panel = panels.get(editor);
+			panel.onClose();
+			uninject(editor);
+			panels.remove(editor);
+		}
+	}
 
 	@Override
 	public void selectionChanged(FileEditorManagerEvent fileEditorManagerEvent) { }

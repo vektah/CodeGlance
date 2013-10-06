@@ -30,10 +30,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.FoldRegion;
 import com.intellij.openapi.editor.ScrollType;
-import com.intellij.openapi.editor.event.DocumentAdapter;
-import com.intellij.openapi.editor.event.DocumentEvent;
-import com.intellij.openapi.editor.event.VisibleAreaEvent;
-import com.intellij.openapi.editor.event.VisibleAreaListener;
+import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
@@ -51,10 +48,7 @@ import net.vektah.codeglance.render.TaskRunner;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.lang.reflect.Array;
 
 /**
@@ -77,13 +71,19 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private Config config;
 	private int lastFoldCount = -1;
 
+	// Anonymous Listeners that should be cleaned up.
+	private ComponentListener componentListener;
+	private DocumentListener documentListener;
+	private ConfigChangeListener configChangeListener;
+	private MouseListener mouseListener = new MouseListener();
+
 	public GlancePanel(Project project, FileEditor fileEditor, JPanel container, TaskRunner runner) {
 		this.runner = runner;
 		this.editor = ((TextEditor) fileEditor).getEditor();
 		this.container = container;
 		this.project = project;
 
-		container.addComponentListener(new ComponentAdapter() {
+		container.addComponentListener(componentListener = new ComponentAdapter() {
 			@Override public void componentResized(ComponentEvent componentEvent) {
 				updateSize();
 				GlancePanel.this.revalidate();
@@ -91,13 +91,13 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 			}
 		});
 
-		editor.getDocument().addDocumentListener(new DocumentAdapter() {
+		editor.getDocument().addDocumentListener(documentListener = new DocumentAdapter() {
 			@Override public void documentChanged(DocumentEvent documentEvent) {
 				updateImage();
 			}
 		});
 
-		configService.add(new ConfigChangeListener() {
+		configService.add(configChangeListener = new ConfigChangeListener() {
 			@Override public void configChanged() {
 				readConfig();
 				updateImage();
@@ -110,9 +110,8 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		readConfig();
 
 		editor.getScrollingModel().addVisibleAreaListener(this);
-		MouseListener listener = new MouseListener();
-		addMouseListener(listener);
-		addMouseMotionListener(listener);
+		addMouseListener(mouseListener);
+		addMouseMotionListener(mouseListener);
 
 		updateSize();
 		for(int i = 0; i < Array.getLength(minimaps); i++) {
@@ -272,6 +271,20 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
 		updateSize();
 		repaint();
+	}
+
+	public void onClose() {
+		container.removeComponentListener(componentListener);
+		editor.getDocument().removeDocumentListener(documentListener);
+		configService.remove(configChangeListener);
+		editor.getScrollingModel().removeVisibleAreaListener(this);
+		removeMouseListener(mouseListener);
+		removeMouseMotionListener(mouseListener);
+
+		componentListener = null;
+		documentListener = null;
+		configChangeListener = null;
+		mouseListener = null;
 	}
 
 	private class MouseListener extends MouseAdapter {

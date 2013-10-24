@@ -33,6 +33,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.util.ui.UIUtil;
 import net.vektah.codeglance.GlancePanel;
 import net.vektah.codeglance.config.Config;
 
@@ -102,7 +103,7 @@ public class Minimap {
 			if(img != null) img.flush();
 			// Create an image that is a bit bigger then the one we need so we don't need to re-create it again soon.
 			// Documents can get big, so rather then relative sizes lets just add a fixed amount on.
-			img = new BufferedImage(GlancePanel.MAX_WIDTH, height + 100 * config.pixelsPerLine, BufferedImage.TYPE_3BYTE_BGR);
+            img = UIUtil.createImage(GlancePanel.MAX_WIDTH, height + 100 * config.pixelsPerLine, BufferedImage.TYPE_3BYTE_BGR);
 			logger.debug("Created new image");
 		}
 	}

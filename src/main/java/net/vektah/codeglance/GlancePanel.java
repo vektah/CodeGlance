@@ -76,6 +76,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private ComponentListener componentListener;
 	private DocumentListener documentListener;
 	private ConfigChangeListener configChangeListener;
+	private MouseWheelListener mouseWheelListener = new MouseWheelListener();
 	private MouseListener mouseListener = new MouseListener();
 
 	public GlancePanel(Project project, FileEditor fileEditor, JPanel container, TaskRunner runner) {
@@ -107,6 +108,8 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 				GlancePanel.this.repaint();
 			}
 		});
+
+		addMouseWheelListener(mouseWheelListener);
 
 		readConfig();
 
@@ -279,6 +282,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		editor.getDocument().removeDocumentListener(documentListener);
 		configService.remove(configChangeListener);
 		editor.getScrollingModel().removeVisibleAreaListener(this);
+		removeMouseWheelListener(mouseWheelListener);
 		removeMouseListener(mouseListener);
 		removeMouseMotionListener(mouseListener);
 
@@ -286,6 +290,13 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		documentListener = null;
 		configChangeListener = null;
 		mouseListener = null;
+	}
+
+	private class MouseWheelListener implements java.awt.event.MouseWheelListener {
+		@Override public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
+			logger.warn(Integer.toString(mouseWheelEvent.getWheelRotation()));
+			editor.getScrollingModel().scrollVertically(editor.getScrollingModel().getVerticalScrollOffset() + (mouseWheelEvent.getWheelRotation() * editor.getLineHeight() * 3));
+		}
 	}
 
 	private class MouseListener extends MouseAdapter {

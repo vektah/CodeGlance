@@ -38,6 +38,7 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
+import com.intellij.ui.JBColor;
 import net.vektah.codeglance.config.Config;
 import net.vektah.codeglance.config.ConfigChangeListener;
 import net.vektah.codeglance.config.ConfigService;
@@ -241,7 +242,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 					null);
 
 
-			g.setColor(Color.GRAY);
+			g.setColor(JBColor.GRAY);
 			Graphics2D g2d = (Graphics2D) g;
 
 			int firstVisibleLine =  getMapYFromEditorY((int) visibleArea.getMinY());

@@ -13,6 +13,7 @@
 		<h3>1.4.0</h3>
 		<ul>
 			<li>Scrolling while hovering over the overview now works</li>
+			<li>Add a keybind to show/hide codeglance. Default is control shift G</li>
 		</ul>
 		<h3>1.3.2: Fixed a memory leak</h3>
 		<h3>1.3.1: Fix a NPE in offsetToScreenSpace()</h3>
@@ -73,6 +74,12 @@
 	<project-components>
 		<component><implementation-class>net.vektah.codeglance.CodeGlancePlugin</implementation-class></component>
 	</project-components>
+
+	<actions>
+		<action id="CodeGlance.toggle" text="Toggle CodeGlance" class="net.vektah.codeglance.actions.ShowHideAction" description="Toggles CodeGlance on and off">
+			<keyboard-shortcut first-keystroke="control shift G" keymap="$default" />
+		</action>
+	</actions>
 
 	<extensions defaultExtensionNs="com.intellij">
 		<applicationService serviceImplementation="net.vektah.codeglance.config.ConfigService" />

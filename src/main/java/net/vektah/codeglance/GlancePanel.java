@@ -294,7 +294,6 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
 	private class MouseWheelListener implements java.awt.event.MouseWheelListener {
 		@Override public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
-			logger.warn(Integer.toString(mouseWheelEvent.getWheelRotation()));
 			editor.getScrollingModel().scrollVertically(editor.getScrollingModel().getVerticalScrollOffset() + (mouseWheelEvent.getWheelRotation() * editor.getLineHeight() * 3));
 		}
 	}

@@ -33,7 +33,6 @@ import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.psi.tree.IElementType;
-import net.vektah.codeglance.GlancePanel;
 import net.vektah.codeglance.config.Config;
 
 import java.awt.*;
@@ -100,11 +99,11 @@ public class Minimap {
 
 		// If the image is too small to represent the entire document now then regenerate it
 		// TODO: Copy old image when incremental update is added.
-		if (img == null || img.getHeight() < height) {
+		if (img == null || img.getHeight() < height || img.getWidth() < config.width) {
 			if(img != null) img.flush();
 			// Create an image that is a bit bigger then the one we need so we don't need to re-create it again soon.
 			// Documents can get big, so rather then relative sizes lets just add a fixed amount on.
-			img = new BufferedImage(GlancePanel.MAX_WIDTH, height + 100 * config.pixelsPerLine, BufferedImage.TYPE_4BYTE_ABGR);
+			img = new BufferedImage(config.width, height + 100 * config.pixelsPerLine, BufferedImage.TYPE_4BYTE_ABGR);
 			logger.debug("Created new image");
 		}
 	}
@@ -251,7 +250,7 @@ public class Minimap {
 				}
 
 				// Abort if this line is getting to long...
-				if(x > GlancePanel.MAX_WIDTH) break;
+				if(x > config.width) break;
 			}
 
 			// Render whole token, make sure multi lines are handled gracefully.

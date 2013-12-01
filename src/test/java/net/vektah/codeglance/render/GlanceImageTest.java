@@ -27,7 +27,6 @@ package net.vektah.codeglance.render;
 
 import com.intellij.openapi.editor.FoldRegion;
 import com.intellij.openapi.util.text.StringUtil;
-import net.vektah.codeglance.GlancePanel;
 import net.vektah.codeglance.config.Config;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -37,9 +36,9 @@ import static junit.framework.Assert.assertEquals;
 
 public class GlanceImageTest {
 	private Minimap img;
+	private Config config = new Config();
 
 	@BeforeMethod public void setUp() {
-		Config config = new Config();
 		config.pixelsPerLine = 2;
 		img = new Minimap(config);
 	}
@@ -63,19 +62,19 @@ public class GlanceImageTest {
 	@Test public void test_calculate_dimensions_resize() {
 		img.updateDimensions("ASDF\nHJKL", new FoldRegion[] {});
 
-		assertEquals(GlancePanel.MAX_WIDTH, img.img.getWidth());
+		assertEquals(config.width, img.img.getWidth());
 		assertEquals(204, img.img.getHeight());
 
 		// Only added a little, so image should not get regenerated.
 		img.updateDimensions("asdfjkl;asdfjkl;\nasdfjlkasdfjkl\nasdfjkl;a;sdfjkl", new FoldRegion[] {});
 
-		assertEquals(GlancePanel.MAX_WIDTH, img.img.getWidth());
+		assertEquals(config.width, img.img.getWidth());
 		assertEquals(204, img.img.getHeight());
 
 		// Went over the existing image boundary so a new one should be created.
 		img.updateDimensions(StringUtil.repeat("\na", 150), new FoldRegion[] {});
 
-		assertEquals(GlancePanel.MAX_WIDTH, img.img.getWidth());
+		assertEquals(config.width, img.img.getWidth());
 		assertEquals(502, img.img.getHeight());
 	}
 

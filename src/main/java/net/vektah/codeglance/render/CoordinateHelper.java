@@ -152,6 +152,12 @@ public class CoordinateHelper {
 		}
 	}
 
+	public int offsetToCharacterInLine(int offset) {
+		if (map == null) return offset / pixelsPerLine;
+
+		return offset - map.getLine(offset).begin;
+	}
+
 	public int linesToPixels(int lines) {
 		return (int) (lines * pixelsPerLine * hidpiScale);
 	}

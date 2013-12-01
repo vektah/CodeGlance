@@ -49,6 +49,8 @@ public class Minimap {
 	private Logger logger = Logger.getInstance(getClass());
 	private ArrayList<Integer> line_endings;
 	private Config config;
+	private static final Composite CLEAR = AlphaComposite.getInstance(AlphaComposite.CLEAR);
+	private static final int[] unpackedColor = new int[4];
 
 	public Minimap(Config config) {
 		this.config = config;
@@ -102,7 +104,7 @@ public class Minimap {
 			if(img != null) img.flush();
 			// Create an image that is a bit bigger then the one we need so we don't need to re-create it again soon.
 			// Documents can get big, so rather then relative sizes lets just add a fixed amount on.
-			img = new BufferedImage(GlancePanel.MAX_WIDTH, height + 100 * config.pixelsPerLine, BufferedImage.TYPE_3BYTE_BGR);
+			img = new BufferedImage(GlancePanel.MAX_WIDTH, height + 100 * config.pixelsPerLine, BufferedImage.TYPE_4BYTE_ABGR);
 			logger.debug("Created new image");
 		}
 	}
@@ -219,10 +221,9 @@ public class Minimap {
 		Lexer lexer = hl.getHighlightingLexer();
 		IElementType tokenType;
 
-		Graphics g = img.getGraphics();
-		g.setColor(colorScheme.getDefaultBackground());
+		Graphics2D g = (Graphics2D)img.getGraphics();
+		g.setComposite(CLEAR);
 		g.fillRect(0, 0, img.getWidth(), img.getHeight());
-		g.dispose();
 
 		lexer.start(text);
 		tokenType = lexer.getTokenType();
@@ -281,25 +282,25 @@ public class Minimap {
 					switch(config.pixelsPerLine) {
 						case 1:
 							// Cant show whitespace between lines any more. This looks rather ugly...
-							img.setRGB(x, y + 1, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
+							setPixel(x,  y + 1, color, (float) ((topWeight + bottomWeight) / 2.0));
 							break;
 
 						case 2:
 							// Two lines we make the top line a little lighter to give the illusion of whitespace between lines.
-							img.setRGB(x, y, mix(color, bgcolor, topWeight * 0.5f));
-							img.setRGB(x, y + 1, mix(color, bgcolor, bottomWeight));
+							setPixel(x, y, color, topWeight * 0.5f);
+							setPixel(x, y + 1, color, bottomWeight);
 							break;
 						case 3:
 							// Three lines we make the top nearly empty, and fade the bottom a little too
-							img.setRGB(x, y, mix(color, bgcolor, topWeight * 0.3f));
-							img.setRGB(x, y + 1, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
-							img.setRGB(x, y + 2, mix(color, bgcolor, bottomWeight * 0.7f));
+							setPixel(x, y, color, topWeight * 0.3f);
+							setPixel(x, y + 1, color, (float) ((topWeight + bottomWeight) / 2.0));
+							setPixel(x, y + 2, color, bottomWeight * 0.7f);
 							break;
 						case 4:
 							// Empty top line, Nice blend for everything else
-							img.setRGB(x, y + 1, mix(color, bgcolor, topWeight));
-							img.setRGB(x, y + 2, mix(color, bgcolor, (float) ((topWeight + bottomWeight) / 2.0)));
-							img.setRGB(x, y + 3, mix(color, bgcolor, bottomWeight));
+							setPixel(x, y + 1, color, topWeight);
+							setPixel(x, y + 2, color, (float) ((topWeight + bottomWeight) / 2.0));
+							setPixel(x, y + 3, color, bottomWeight);
 					}
 				}
 			}
@@ -310,29 +311,22 @@ public class Minimap {
 	}
 
 	/**
-	 * Mix two colors together
-	 * @param a         Color A
-	 * @param b         Color B
+	 * mask out the alpha component and set it to the given value.
+	 * @param color         Color A
 	 * @param alpha     alpha percent from 0-1.
-	 * @return Mixed color
+	 * @return int color
 	 */
-	private int mix(int a, int b, float alpha) {
-		if(alpha > 1) alpha = a;
+	private void setPixel(int x, int y, int color, float alpha) {
+		if(alpha > 1) alpha = color;
 		if(alpha < 0) alpha = 0;
 
-		float aR = (a & 0xFF0000) >> 16;
-		float aG = (a & 0x00FF00) >> 8;
-		float aB = (a & 0x0000FF);
+		// abgr is backwards?
+		unpackedColor[3] = (int) (alpha * 255);
+		unpackedColor[0] = (color & 0xFF0000) >> 16;
+		unpackedColor[1] = (color & 0x00FF00) >> 8;
+		unpackedColor[2] = (color & 0x0000FF);
 
-		float bR = (b & 0xFF0000) >> 16;
-		float bG = (b & 0x00FF00) >> 8;
-		float bB = (b & 0x0000FF);
-
-		int cR = (int) (aR * alpha + bR * (1 - alpha));
-		int cG = (int) (aG * alpha + bG * (1 - alpha));
-		int cB = (int) (aB * alpha + bB * (1 - alpha));
-
-		return 0xFF000000 | (cR << 16) | (cG << 8) | cB;
+		img.getRaster().setPixel(x, y, unpackedColor);
 	}
 
 	public class LineInfo {

@@ -30,6 +30,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.FoldRegion;
 import com.intellij.openapi.editor.ScrollType;
+import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.TextEditor;
@@ -78,6 +79,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private ConfigChangeListener configChangeListener;
 	private MouseWheelListener mouseWheelListener = new MouseWheelListener();
 	private MouseListener mouseListener = new MouseListener();
+	private SelectionListener selectionListener;
 
 	public GlancePanel(Project project, FileEditor fileEditor, JPanel container, TaskRunner runner) {
 		this.runner = runner;
@@ -114,6 +116,13 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		readConfig();
 
 		editor.getScrollingModel().addVisibleAreaListener(this);
+
+		editor.getSelectionModel().addSelectionListener(selectionListener = new SelectionListener() {
+			@Override public void selectionChanged(SelectionEvent selectionEvent) {
+				repaint();
+			}
+		});
+
 		addMouseListener(mouseListener);
 		addMouseMotionListener(mouseListener);
 
@@ -217,12 +226,15 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	}
 
 	@Override
-	public void paint(Graphics g) {
+	public void paint(Graphics gfx) {
+		Graphics2D g = (Graphics2D) gfx;
 		g.setColor(editor.getColorsScheme().getDefaultBackground());
 		g.fillRect(0, 0, getWidth(), getHeight());
 
 		logger.debug(String.format("Rendering to buffer: %d", activeBuffer));
 		if (activeBuffer >= 0) {
+			paintSelection(g);
+
 			Minimap minimap = minimaps[activeBuffer];
 
 			Rectangle visibleArea = editor.getScrollingModel().getVisibleArea();
@@ -244,17 +256,48 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 					src.x, src.y, src.width, src.height,
 					null);
 
+			paintVisibleWindow(g);
+		}
+	}
 
-			g.setColor(JBColor.GRAY);
-			Graphics2D g2d = (Graphics2D) g;
+	private void paintVisibleWindow(Graphics2D g) {
+		Rectangle visibleArea = editor.getScrollingModel().getVisibleArea();
+		int firstVisibleLine =  getMapYFromEditorY((int) visibleArea.getMinY());
+		int height = coords.linesToPixels((int) ((visibleArea.getMaxY() - visibleArea.getMinY()) / editor.getLineHeight()));
 
-			int firstVisibleLine =  getMapYFromEditorY((int) visibleArea.getMinY());
-			int height = coords.linesToPixels((int) ((visibleArea.getMaxY() - visibleArea.getMinY()) / editor.getLineHeight()));
+		// Draw the current viewport
+		g.setColor(JBColor.GRAY);
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.50f));
+		g.drawRect(0, firstVisibleLine, getWidth(), height);
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f));
+		g.fillRect(0, firstVisibleLine, getWidth(), height);
+	}
 
-			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.40f));
-			g2d.drawRect(0, firstVisibleLine, getWidth(), height);
-			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f));
-			g2d.fillRect(0, firstVisibleLine, getWidth(), height);
+	private void paintSelection(Graphics2D g) {
+		int selectionStartOffset = editor.getSelectionModel().getSelectionStart();
+		int selectionEndOffset = editor.getSelectionModel().getSelectionEnd();
+		int firstSelectedLine = coords.offsetToScreenSpace(selectionStartOffset);
+		int firstSelectedCharacter = coords.offsetToCharacterInLine(selectionStartOffset);
+		int lastSelectedLine = coords.offsetToScreenSpace(selectionEndOffset);
+		int lastSelectedCharacter = coords.offsetToCharacterInLine(selectionEndOffset);
+
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.90f));
+		g.setColor(editor.getColorsScheme().getColor(ColorKey.createColorKey("SELECTION_BACKGROUND", JBColor.BLUE)));
+
+		if (firstSelectedLine == lastSelectedLine) {
+			// Single line is easy
+			g.fillRect(firstSelectedCharacter, firstSelectedLine, lastSelectedCharacter - firstSelectedCharacter, config.pixelsPerLine);
+		} else {
+			// Draw the line leading in
+			g.fillRect(firstSelectedCharacter, firstSelectedLine, getWidth() - firstSelectedCharacter, config.pixelsPerLine);
+
+			// Then the line at the end
+			g.fillRect(0, lastSelectedLine, lastSelectedCharacter, config.pixelsPerLine);
+
+			if (firstSelectedLine + 1 != lastSelectedLine) {
+				// And if there is anything in between, fill it in
+				g.fillRect(0, firstSelectedLine + config.pixelsPerLine, getWidth(), lastSelectedLine - firstSelectedLine - config.pixelsPerLine);
+			}
 		}
 	}
 
@@ -282,6 +325,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		editor.getDocument().removeDocumentListener(documentListener);
 		configService.remove(configChangeListener);
 		editor.getScrollingModel().removeVisibleAreaListener(this);
+		editor.getSelectionModel().removeSelectionListener(selectionListener);
 		removeMouseWheelListener(mouseWheelListener);
 		removeMouseListener(mouseListener);
 		removeMouseMotionListener(mouseListener);

@@ -59,7 +59,8 @@ public class ConfigEntry implements Configurable {
 			config.disabled != form.isDisabled() ||
 			config.jumpOnMouseDown != form.jumpOnMouseDown() ||
 			config.percentageBasedClick != form.percentageBasedClick() ||
-			config.width != form.getWidth();
+			config.width != form.getWidth() ||
+			config.viewportColor != form.getViewportColor();
 	}
 
 	@Override public void apply() throws ConfigurationException {
@@ -70,6 +71,13 @@ public class ConfigEntry implements Configurable {
 		config.jumpOnMouseDown = form.jumpOnMouseDown();
 		config.percentageBasedClick = form.percentageBasedClick();
 		config.width = form.getWidth();
+
+		if (form.getViewportColor().length() == 6 && form.getViewportColor().matches("^[a-fA-F0-9]*$")) {
+			config.viewportColor = form.getViewportColor();
+		} else {
+			config.viewportColor = "A0A0A0";
+		}
+
 		configService.dispatch().configChanged();
 	}
 
@@ -80,6 +88,7 @@ public class ConfigEntry implements Configurable {
 		form.setDisabled(config.disabled);
 		form.setJumpOnMouseDown(config.jumpOnMouseDown);
 		form.setPercentageBasedClick(config.percentageBasedClick);
+		form.setViewportColor(config.viewportColor);
 		form.setWidth(config.width);
 	}
 

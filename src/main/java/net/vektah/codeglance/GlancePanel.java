@@ -71,6 +71,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	private ConfigService configService = ServiceManager.getService(ConfigService.class);
 	private Config config;
 	private int lastFoldCount = -1;
+	private Color viewportColor;
 
 	// Anonymous Listeners that should be cleaned up.
 	private ComponentListener componentListener;
@@ -136,6 +137,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		config = configService.getState();
 
 		coords.setPixelsPerLine(config.pixelsPerLine);
+		viewportColor = Color.decode("#" + config.viewportColor);
 	}
 
 	/**
@@ -260,7 +262,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		int height = coords.linesToPixels((int) ((visibleArea.getMaxY() - visibleArea.getMinY()) / editor.getLineHeight()));
 
 		// Draw the current viewport
-		g.setColor(JBColor.GRAY);
+		g.setColor(viewportColor);
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.50f));
 		g.drawRect(0, firstVisibleLine, getWidth(), height);
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f));

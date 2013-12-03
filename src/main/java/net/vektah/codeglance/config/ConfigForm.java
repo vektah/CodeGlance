@@ -40,6 +40,7 @@ public class ConfigForm {
 	private JComboBox jumpToPosition;
 	private JComboBox clickStyle;
 	private JTextField width;
+	private JTextField viewportColor;
 
 	public ConfigForm() {
 		pixelsPerLine.setModel(new DefaultComboBoxModel(new Integer[]{1, 2, 3, 4}));
@@ -83,6 +84,14 @@ public class ConfigForm {
 		clickStyle.setSelectedIndex(click ? 0 : 1);
 	}
 
+	public String getViewportColor() {
+		return viewportColor.getText();
+	}
+
+	public void setViewportColor(String color) {
+		viewportColor.setText(color);
+	}
+
 	public int getWidth() {
 		try {
 			return Integer.parseInt(width.getText());
@@ -111,7 +120,7 @@ public class ConfigForm {
 	 */
 	private void $$$setupUI$$$() {
 		rootPanel = new JPanel();
-		rootPanel.setLayout(new GridLayoutManager(6, 3, new Insets(0, 0, 0, 0), -1, -1));
+		rootPanel.setLayout(new GridLayoutManager(7, 3, new Insets(0, 0, 0, 0), -1, -1));
 		final JLabel label1 = new JLabel();
 		label1.setText("Pixels Per Line:");
 		label1.setDisplayedMnemonic('P');
@@ -128,7 +137,7 @@ public class ConfigForm {
 		final Spacer spacer1 = new Spacer();
 		rootPanel.add(spacer1, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
 		final Spacer spacer2 = new Spacer();
-		rootPanel.add(spacer2, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+		rootPanel.add(spacer2, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
 		final JLabel label2 = new JLabel();
 		label2.setText("Jump to position on:");
 		rootPanel.add(label2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -158,6 +167,11 @@ public class ConfigForm {
 		final JLabel label5 = new JLabel();
 		label5.setText("Width:");
 		rootPanel.add(label5, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+		final JLabel label6 = new JLabel();
+		label6.setText("Viewport Color");
+		rootPanel.add(label6, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+		viewportColor = new JTextField();
+		rootPanel.add(viewportColor, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
 		label1.setLabelFor(pixelsPerLine);
 	}
 

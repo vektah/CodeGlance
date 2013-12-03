@@ -16,6 +16,7 @@
 			<li>Add a keybind to show/hide codeglance. Default is control shift G</li>
 			<li>Display editor selection in real time</li>
 			<li>Selection is now resizeable</li>
+			<li>Configurable viewport color</li>
 		</ul>
 		<h3>1.3.2: Fixed a memory leak</h3>
 		<h3>1.3.1: Fix a NPE in offsetToScreenSpace()</h3>

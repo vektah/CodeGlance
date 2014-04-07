@@ -27,6 +27,7 @@ package net.vektah.codeglance.config;
 
 public class Config {
 	public int pixelsPerLine = 3;
+	public float retinaScalingFactor = 1; // TODO: start supporting mac book retina screen different scaling
 	public boolean disabled = false;
 	public boolean jumpOnMouseDown = true;
 	public boolean percentageBasedClick = false;

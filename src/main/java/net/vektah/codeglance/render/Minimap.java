@@ -50,6 +50,7 @@ public class Minimap {
 	private Config config;
 	private static final Composite CLEAR = AlphaComposite.getInstance(AlphaComposite.CLEAR);
 	private static final int[] unpackedColor = new int[4];
+    private static final LineInfo NO_LINES = new LineInfo(1, 0, 0);
 
 	public Minimap(Config config) {
 		this.config = config;
@@ -129,12 +130,16 @@ public class Minimap {
 	 * @return 3 element array, [line_number, o]
 	 */
 	public LineInfo getLine(int i) {
+        // We can get called before the line scan has been done. Just return the first line.
+        if (line_endings == null) {
+            return NO_LINES;
+        }
 		int lines = line_endings.get(line_endings.size() - 1);
 		if(i > lines) i = lines;
 		if(i < 0) i = 0;
 		// Dummy entries if there are no lines
-		if(line_endings.size() == 0) return new LineInfo(1, 0, 0);
-		if(line_endings.size() == 1) return new LineInfo(1, 0, 0);
+		if(line_endings.size() == 0) return NO_LINES;
+		if(line_endings.size() == 1) return NO_LINES;
 		if(line_endings.size() == 2) return new LineInfo(1, line_endings.get(0) + 1, line_endings.get(1));
 
 		int index_min = 0;
@@ -328,7 +333,7 @@ public class Minimap {
 		img.getRaster().setPixel(x, y, unpackedColor);
 	}
 
-	public class LineInfo {
+	public static class LineInfo {
 		LineInfo(int number, int begin, int end) {
 			this.number = number;
 			this.begin = begin;

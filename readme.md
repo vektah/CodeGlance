@@ -31,3 +31,16 @@ mvn package
 After it finsihes downloading dependencies and building you should now have
 a **CodeGlance-${VERSION}.jar** in the directory. This can be tested in intellij by 
 going to settings->plugins->install from disk.
+
+
+
+Running from source in Intellj
+===================
+1. Make sure you have the Plugin DevKit installed. 
+2. Checkout sources from github
+3. Create a new Intellij Platform plugin project
+4. Select source directory, chose a plugin sdk (create one that points to your intellij install).
+5. Mark src/main/java as source root, and src/test/java as test root.
+6. In order to run tests you will need to find mockito and testng jars. I usually do this with maven.
+7. In module settings set the path to META-INF to src/main/resources
+8. Hit Run.

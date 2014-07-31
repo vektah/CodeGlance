@@ -207,10 +207,12 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
 	private float getHidpiScale() {
 		// Work around for apple going full retard with half pixel pixels.
-		Float scale = (Float)Toolkit.getDefaultToolkit().getDesktopProperty("apple.awt.contentScaleFactor");
-		if (scale == null) {
-			scale = 1.0f;
-		}
+		// Removed temporarily as a fix for bugged scaling on OS X
+		//Float scale = (Float)Toolkit.getDefaultToolkit().getDesktopProperty("apple.awt.contentScaleFactor");
+		//if (scale == null) {
+		//	scale = 1.0f;
+		//}
+		float scale = 1.0f;
 
 		return scale;
 	}

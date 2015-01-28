@@ -109,7 +109,7 @@ public class ConfigForm {
 		try {
 			return Integer.parseInt(minLinesCount.getText());
 		} catch (NumberFormatException e) {
-			return 75;
+			return 85;
 		}
 	}
 

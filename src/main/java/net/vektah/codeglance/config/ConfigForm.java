@@ -41,6 +41,7 @@ public class ConfigForm {
 	private JComboBox clickStyle;
 	private JTextField width;
 	private JTextField viewportColor;
+	private JTextField minLinesCount;
 
 	public ConfigForm() {
 		pixelsPerLine.setModel(new DefaultComboBoxModel(new Integer[]{1, 2, 3, 4}));
@@ -102,6 +103,18 @@ public class ConfigForm {
 
 	public void setWidth(int width) {
 		this.width.setText(Integer.toString(width));
+	}
+
+	public int getMinLinesCount() {
+		try {
+			return Integer.parseInt(minLinesCount.getText());
+		} catch (NumberFormatException e) {
+			return 75;
+		}
+	}
+
+	public void setMinLinesCount(int minLinesCount) {
+		this.minLinesCount.setText(Integer.toString(minLinesCount));
 	}
 
 	{

@@ -144,7 +144,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	 * Adjusts the panels size to be a percentage of the total window
 	 */
 	private void updateSize() {
-		if (config.disabled) {
+		if (config.disabled || editor.getDocument().getLineCount() < config.minLineCount) {
 			setPreferredSize(new Dimension(0, 0));
 		} else {
 			Dimension size = new Dimension(config.width, 0);
@@ -156,7 +156,7 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	 * Fires off a new task to the worker thread. This should only be called from the ui thread.
 	 */
 	private void updateImage() {
-		if (config.disabled) return;
+		if (config.disabled || editor.getDocument().getLineCount() < config.minLineCount) return;
 		if (project.isDisposed()) return;
 
 		PsiFile file = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());

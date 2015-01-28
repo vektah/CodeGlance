@@ -60,7 +60,8 @@ public class ConfigEntry implements Configurable {
 			config.jumpOnMouseDown != form.jumpOnMouseDown() ||
 			config.percentageBasedClick != form.percentageBasedClick() ||
 			config.width != form.getWidth() ||
-			config.viewportColor != form.getViewportColor();
+			config.viewportColor != form.getViewportColor() ||
+			config.minLineCount != form.getMinLinesCount();
 	}
 
 	@Override public void apply() throws ConfigurationException {
@@ -78,6 +79,7 @@ public class ConfigEntry implements Configurable {
 			config.viewportColor = "A0A0A0";
 		}
 
+		config.minLineCount = form.getMinLinesCount();
 		configService.dispatch().configChanged();
 	}
 
@@ -90,6 +92,7 @@ public class ConfigEntry implements Configurable {
 		form.setPercentageBasedClick(config.percentageBasedClick);
 		form.setViewportColor(config.viewportColor);
 		form.setWidth(config.width);
+		form.setMinLinesCount(config.minLineCount);
 	}
 
 	@Override public void disposeUIResources() {

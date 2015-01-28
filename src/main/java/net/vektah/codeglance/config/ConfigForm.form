@@ -129,6 +129,7 @@
         </constraints>
         <properties>
           <text value="Minimum lines count:"/>
+          <toolTipText value="Minimum number of lines to show minimap."/>
         </properties>
       </component>
       <vspacer id="d0587">

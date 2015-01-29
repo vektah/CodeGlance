@@ -26,10 +26,21 @@
 package net.vektah.codeglance.config;
 
 public class Config {
-	public int pixelsPerLine = 3;
-	public boolean disabled = false;
-	public boolean jumpOnMouseDown = true;
-	public boolean percentageBasedClick = false;
-	public int width = 110;
-	public String viewportColor = "A0A0A0";
+	public int pixelsPerLine;
+	public int minLineCount;
+	public boolean disabled;
+	public boolean jumpOnMouseDown;
+	public boolean percentageBasedClick;
+	public int width;
+	public String viewportColor;
+
+	public Config() {
+		jumpOnMouseDown = true;
+		pixelsPerLine = 3;
+		minLineCount = 85;
+		disabled = false;
+		percentageBasedClick = false;
+		width = 110;
+		viewportColor = "A0A0A0";
+	}
 }

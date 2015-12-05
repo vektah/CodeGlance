@@ -351,19 +351,38 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 	}
 
 	public void onClose() {
-		container.removeComponentListener(componentListener);
-		editor.getDocument().removeDocumentListener(documentListener);
-		configService.remove(configChangeListener);
+		if (componentListener != null) {
+			container.removeComponentListener(componentListener);
+		}
+
+		if (documentListener != null) {
+			editor.getDocument().removeDocumentListener(documentListener);
+		}
+
+		if (configChangeListener != null) {
+			configService.remove(configChangeListener);
+		}
+
 		editor.getScrollingModel().removeVisibleAreaListener(this);
-		editor.getSelectionModel().removeSelectionListener(selectionListener);
-		removeMouseWheelListener(mouseWheelListener);
-		removeMouseListener(mouseListener);
-		removeMouseMotionListener(mouseListener);
+		if (selectionListener != null) {
+			editor.getSelectionModel().removeSelectionListener(selectionListener);
+		}
+
+		if (mouseWheelListener != null) {
+			removeMouseWheelListener(mouseWheelListener);
+		}
+
+		if (mouseListener != null) {
+			removeMouseListener(mouseListener);
+			removeMouseMotionListener(mouseListener);
+		}
 
 		componentListener = null;
 		documentListener = null;
 		configChangeListener = null;
+		selectionListener = null;
 		mouseListener = null;
+		mouseWheelListener = null;
 	}
 
 	private class MouseWheelListener implements java.awt.event.MouseWheelListener {

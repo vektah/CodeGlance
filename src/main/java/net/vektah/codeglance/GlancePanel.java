@@ -233,6 +233,8 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 		g.setColor(editor.getColorsScheme().getDefaultBackground());
 		g.fillRect(0, 0, getWidth(), getHeight());
 
+		if (editor.getDocument().getTextLength() == 0) return;
+
 		double documentEndY = editor.logicalPositionToXY(editor.offsetToLogicalPosition(editor.getDocument().getTextLength() - 1)).getY();
 		Rectangle visibleArea = editor.getScrollingModel().getVisibleArea();
 		coords

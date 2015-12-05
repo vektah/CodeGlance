@@ -178,7 +178,6 @@ public class GlancePanel extends JPanel implements VisibleAreaListener {
 
 		Minimap map = mapRef.get();
 		if (map == null) {
-			logger.warn("Recreating buffer, looks like it was freed");
 			mapRef = new SoftReference<Minimap>(map = new Minimap(configService.getState()));
 		}
 

@@ -97,7 +97,7 @@ public class Minimap {
 		if(line_endings.get(line_endings.size() - 1) != text.length() - 1) line_endings.add(text.length() - 1);
 
 		this.line_endings = line_endings;
-		height = lines * config.pixelsPerLine;
+		height = (lines + 1) * config.pixelsPerLine;
 
 		// If the image is too small to represent the entire document now then regenerate it
 		// TODO: Copy old image when incremental update is added.

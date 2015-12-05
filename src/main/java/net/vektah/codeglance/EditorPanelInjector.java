@@ -50,13 +50,15 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 	}
 
 	@Override
-	public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
+	public void fileOpened(FileEditorManager fem, VirtualFile virtualFile) {
 		// Seems there is a case where multiple split panes can have the same file open and getSelectedEditor, and even
 		// getEditors(virtualVile) return only one of them... So shotgun approach here.
-		FileEditor[] editors = fileEditorManager.getAllEditors();
+		FileEditor[] editors = fem.getAllEditors();
 		for(FileEditor editor: editors) {
 			inject(editor);
 		}
+
+		freeUnusedPanels(fem);
 	}
 
 	/**
@@ -86,13 +88,14 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 				GlancePanel glancePanel = new GlancePanel(project, editor, panel, runner);
 				panel.add(glancePanel, BorderLayout.LINE_END);
 				panels.put(editor, glancePanel);
+				logger.debug("injected");
 			} else {
-				logger.debug("I07: Injection skipped. Looks like we have already injected something here.");
+				logger.warn("I07: Injection skipped. Looks like we have already injected something here.");
 			}
-			} catch(ClassCastException e) {
-				logger.warn(String.format("Injection failed '%s' on line %d.", e.getMessage(), e.getStackTrace()[0].getLineNumber()));
-				return;
-			}
+		} catch(ClassCastException e) {
+			logger.warn(String.format("Injection failed '%s' on line %d.", e.getMessage(), e.getStackTrace()[0].getLineNumber()));
+			return;
+		}
 	}
 
 	private void uninject(FileEditor editor) {
@@ -120,12 +123,22 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 	}
 
 	@Override
-	public void fileClosed(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
-		// Again we don't know which EDITOR was closed, just the file - which could be shared between some editors that
-		// are still open. Lets play 'spot the missing editor'.
+	public void fileClosed(FileEditorManager fem, VirtualFile virtualFile) {
+		freeUnusedPanels(fem);
+	}
+
+	// Again we don't know which EDITOR was closed, just the file - which could be shared between some editors that
+	// are still open. Lets play 'spot the missing editor'.
+
+	/**
+	 * On close we dont know which (if any) editor was closed, just the file. And in configurations we dont even
+	 * get a fileClosed event. Lets just scan all of the open penels and make sure they are still being used by
+	 * at least one of the open editors.
+	 */
+	private void freeUnusedPanels(FileEditorManager fem) {
 		Set<FileEditor> unseen = new HashSet<FileEditor>(panels.keySet());
 
-		for(FileEditor editor: fileEditorManager.getAllEditors()) {
+		for(FileEditor editor: fem.getAllEditors()) {
 			if (unseen.contains(editor)) {
 				unseen.remove(editor);
 			}

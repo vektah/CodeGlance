@@ -26,9 +26,11 @@
 package net.vektah.codeglance;
 
 import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
+import net.vektah.codeglance.config.ConfigService;
 import net.vektah.codeglance.render.TaskRunner;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,6 +50,7 @@ public class CodeGlancePlugin implements ProjectComponent {
 	}
 
 	public void initComponent() {
+		ServiceManager.getService(ConfigService.class).getState().disabled = false;
 		runnerThread.start();
 		project.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, injector);
 		logger.debug("CodeGlance initialized");

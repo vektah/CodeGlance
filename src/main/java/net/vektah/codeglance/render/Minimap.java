@@ -132,8 +132,8 @@ public class Minimap {
 	 */
 	public LineInfo getLine(int i) {
 		// We can get called before the line scan has been done. Just return the first line.
-		if (line_endings == null) return NO_LINES;
-		if(i == 0) return NO_LINES;
+		if(line_endings == null) return NO_LINES;
+		if(line_endings.size() == 0) return NO_LINES;
 		int lines = line_endings.get(line_endings.size() - 1);
 		if(i > lines) i = lines;
 		if(i < 0) i = 0;

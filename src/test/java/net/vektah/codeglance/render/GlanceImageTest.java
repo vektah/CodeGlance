@@ -45,12 +45,12 @@ public class GlanceImageTest {
 
 	@DataProvider(name="Test-Dimensions") public static Object[][] testDimensions() {
 		return new Object[][] {
-			{"", 2},
-			{"SingleLine",  2},
-			{"Multi\nLine", 4},
-			{"Line with lots of tabs\n\t\t\t\t\t\t\t\t", 4},
-			{"ʳʳʳʳ", 2},
-			{"ꬉꬉꬉꬉ", 2},
+			{"", 4},
+			{"SingleLine",  4},
+			{"Multi\nLine", 6},
+			{"Line with lots of tabs\n\t\t\t\t\t\t\t\t", 6},
+			{"ʳʳʳʳ", 4},
+			{"ꬉꬉꬉꬉ", 4},
 		};
 	}
 
@@ -63,19 +63,19 @@ public class GlanceImageTest {
 		img.updateDimensions("ASDF\nHJKL", new FoldRegion[] {});
 
 		assertEquals(config.width, img.img.getWidth());
-		assertEquals(204, img.img.getHeight());
+		assertEquals(206, img.img.getHeight());
 
 		// Only added a little, so image should not get regenerated.
 		img.updateDimensions("asdfjkl;asdfjkl;\nasdfjlkasdfjkl\nasdfjkl;a;sdfjkl", new FoldRegion[] {});
 
 		assertEquals(config.width, img.img.getWidth());
-		assertEquals(204, img.img.getHeight());
+		assertEquals(206, img.img.getHeight());
 
 		// Went over the existing image boundary so a new one should be created.
-		img.updateDimensions(StringUtil.repeat("\na", 150), new FoldRegion[] {});
+		img.updateDimensions(StringUtil.repeat("\na", 152), new FoldRegion[] {});
 
 		assertEquals(config.width, img.img.getWidth());
-		assertEquals(502, img.img.getHeight());
+		assertEquals(508, img.img.getHeight());
 	}
 
 	@DataProvider(name="Test-Newlines") public static Object[][] testNewlines() {

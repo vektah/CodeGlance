@@ -88,7 +88,6 @@ public class EditorPanelInjector implements FileEditorManagerListener {
 				GlancePanel glancePanel = new GlancePanel(project, editor, panel, runner);
 				panel.add(glancePanel, BorderLayout.LINE_END);
 				panels.put(editor, glancePanel);
-				logger.debug("injected");
 			} else {
 				logger.warn("I07: Injection skipped. Looks like we have already injected something here.");
 			}

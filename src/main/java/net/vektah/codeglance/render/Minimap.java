@@ -69,7 +69,7 @@ public class Minimap {
 		char last = 0;
 		char ch;
 
-		line_endings = new ArrayList<Integer>();
+		ArrayList<Integer> line_endings = new ArrayList<Integer>();
 		// Magical first line
 		line_endings.add(-1);
 
@@ -96,6 +96,7 @@ public class Minimap {
 		// If there is no final newline add one.
 		if(line_endings.get(line_endings.size() - 1) != text.length() - 1) line_endings.add(text.length() - 1);
 
+		this.line_endings = line_endings;
 		height = lines * config.pixelsPerLine;
 
 		// If the image is too small to represent the entire document now then regenerate it

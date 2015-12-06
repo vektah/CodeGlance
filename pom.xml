@@ -20,6 +20,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.source>1.6</maven.compiler.source>
 		<maven.compiler.target>1.6</maven.compiler.target>
+		<kotlin.version>1.0.0-beta-3594</kotlin.version>
 	</properties>
 
 	<distributionManagement>
@@ -31,6 +32,25 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<artifactId>kotlin-maven-plugin</artifactId>
+				<groupId>org.jetbrains.kotlin</groupId>
+				<version>${kotlin.version}</version>
+
+				<executions>
+					<execution>
+						<id>compile</id>
+						<phase>process-sources</phase>
+						<goals> <goal>compile</goal> </goals>
+					</execution>
+
+					<execution>
+						<id>test-compile</id>
+						<phase>process-test-sources</phase>
+						<goals> <goal>test-compile</goal> </goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -103,6 +123,11 @@
 			<scope>test</scope>
 			<artifactId>testng</artifactId>
 			<version>6.8.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-stdlib</artifactId>
+			<version>${kotlin.version}</version>
 		</dependency>
 	</dependencies>
 </project>

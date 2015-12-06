@@ -23,18 +23,39 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.vektah.codeglance.actions;
+package net.vektah.codeglance.render
 
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.components.ServiceManager;
-import net.vektah.codeglance.config.ConfigService;
+import com.intellij.openapi.diagnostic.Logger
 
-public class ShowHideAction extends AnAction {
-	private ConfigService configService = ServiceManager.getService(ConfigService.class);
+import java.util.concurrent.ArrayBlockingQueue
 
-	@Override public void actionPerformed(AnActionEvent anActionEvent) {
-		configService.getState().disabled = !configService.getState().disabled;
-		configService.dispatch().configChanged();
-	}
+/**
+ * Runs tasks sequentially in a queue. Thread safe.
+ */
+class TaskRunner : Runnable {
+    private var stop = false
+    private val taskQueue = ArrayBlockingQueue<Runnable>(1000)
+    private val logger = Logger.getInstance(javaClass)
+
+    fun add(task: Runnable) {
+        logger.debug("Added new task")
+        taskQueue.add(task)
+    }
+
+    fun stop() {
+        stop = true
+    }
+
+    override fun run() {
+        while (!stop) {
+            try {
+                logger.debug("Starting task")
+                taskQueue.take().run()
+                logger.debug("Task completed")
+            } catch (e: InterruptedException) {
+                return
+            }
+
+        }
+    }
 }

@@ -23,26 +23,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.vektah.codeglance.config;
+package net.vektah.codeglance.config
 
-public class Config {
-	public int pixelsPerLine;
-	public int minLineCount;
-	public int maxFileSize;
-	public boolean disabled;
-	public boolean jumpOnMouseDown;
-	public boolean percentageBasedClick;
-	public int width;
-	public String viewportColor;
-
-	public Config() {
-		jumpOnMouseDown = true;
-		pixelsPerLine = 3;
-		minLineCount = 1;
-		maxFileSize = 20480;
-		disabled = false;
-		percentageBasedClick = false;
-		width = 110;
-		viewportColor = "A0A0A0";
-	}
+class Config {
+    public var pixelsPerLine: Int = 3
+    public var minLineCount: Int = 1
+    public var maxFileSize: Int = 20480
+    public var disabled: Boolean = false
+    public var jumpOnMouseDown: Boolean = true
+    public var percentageBasedClick: Boolean = false
+    public var width: Int = 110
+    public var viewportColor: String = "A0A0A0"
 }

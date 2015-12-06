@@ -23,42 +23,44 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.vektah.codeglance.render;
+package net.vektah.codeglance.render
 
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.testng.annotations.DataProvider
+import org.testng.annotations.Test
 
-import static org.testng.Assert.*;
+import org.testng.Assert.*
 
 /**
  * Some basic sanity tests that the weight generation function works OK.
  */
-public class CharacterWeightTest {
-	@Test public void test_lower_boundaries() {
-		assertEquals(0, CharacterWeight.getTopWeight((char) 0), 0.001);
-		assertEquals(0, CharacterWeight.getTopWeight((char) 1), 0.001);
-		assertEquals(0, CharacterWeight.getTopWeight((char) 32), 0.001);
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 33));
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 126));
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 127));
-		assertNotEquals(0, CharacterWeight.getTopWeight((char) 128));
-	}
+class CharacterWeightTest {
+    @Test fun test_lower_boundaries() {
+        assertEquals(0.0f, GetTopWeight(0), 0.001f)
+        assertEquals(0.0f,GetTopWeight(1), 0.001f)
+        assertEquals(0.0f,GetTopWeight(32), 0.001f)
+        assertNotEquals(0.0f,GetTopWeight(33))
+        assertNotEquals(0.0f,GetTopWeight(127))
+        assertNotEquals(0.0f,GetTopWeight(128))
+    }
 
-	@DataProvider(name="Test-Relative-Weights") public static Object[][] testRelativeWeights() {
-		return new Object[][] {
-			{'.', ','},
-			{'1', '8'},
-			{'.', 'a'},
-			{',', '1'},
-		};
-	}
+    @Test(dataProvider = "Test-Relative-Weights") fun test_relative_weights_are_sane(a: Char, b: Char) {
+        assertTrue(GetTopWeight(a.toInt()) + GetBottomWeight(a.toInt()) < GetTopWeight(b.toInt()) + GetBottomWeight(b.toInt()))
+    }
 
-	@Test(dataProvider = "Test-Relative-Weights") public void test_relative_weights_are_sane(char a, char b) {
-		assertTrue(CharacterWeight.getTopWeight(a) + CharacterWeight.getBottomWeight(a) < CharacterWeight.getTopWeight(b) + CharacterWeight.getBottomWeight(b));
-	}
+    @Test fun test_known_values() {
+        assertEquals(0.2458f, GetTopWeight('v'.toInt()))
+        assertEquals(0.3538f, GetBottomWeight('v'.toInt()))
+    }
 
-	@Test public void test_known_values() {
-		assertEquals(0.2458f, CharacterWeight.getTopWeight('v'));
-		assertEquals(0.3538f, CharacterWeight.getBottomWeight('v'));
-	}
+    companion object {
+
+        @DataProvider(name = "Test-Relative-Weights") fun testRelativeWeights(): Array<Array<Any>> {
+            return arrayOf(
+                arrayOf<Any>('.', ','),
+                arrayOf<Any>('1', '8'),
+                arrayOf<Any>('.', 'a'),
+                arrayOf<Any>(',', '1')
+            )
+        }
+    }
 }

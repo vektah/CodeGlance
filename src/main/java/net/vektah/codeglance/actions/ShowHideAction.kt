@@ -23,8 +23,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.vektah.codeglance.config;
+package net.vektah.codeglance.actions
 
-public interface ConfigChangeListener {
-	public void configChanged();
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.components.ServiceManager
+import net.vektah.codeglance.config.ConfigService
+
+class ShowHideAction : AnAction() {
+    private val configService = ServiceManager.getService(ConfigService::class.java)
+
+    override fun actionPerformed(anActionEvent: AnActionEvent) {
+        configService.state!!.disabled = !configService.state!!.disabled
+        configService.dispatch().configChanged()
+    }
 }

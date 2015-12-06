@@ -23,29 +23,29 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package net.vektah.codeglance.render;
+package net.vektah.codeglance.render
 
-import org.testng.annotations.Test;
+import org.testng.annotations.Test
 
-import static org.mockito.Mockito.*;
+import org.mockito.Mockito.*
 
-public class TaskRunnerTest {
-	@Test public void testTimerTask() {
-		TaskRunner runner = new TaskRunner();
-		new Thread(runner).start();
+class TaskRunnerTest {
+    @Test fun testTimerTask() {
+        val runner = TaskRunner()
+        Thread(runner).start()
 
-		Runnable task = mock(Runnable.class);
+        val task = mock(Runnable::class.java)
 
-		runner.add(task);
+        runner.add(task)
 
-		try {
-			Thread.sleep(50);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+        try {
+            Thread.sleep(50)
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
 
-		runner.stop();
+        runner.stop()
 
-		verify(task).run();
-	}
+        verify(task).run()
+    }
 }

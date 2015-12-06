@@ -34,7 +34,7 @@ def getWeight(char,font):
 
 	return (1 - topAverage) * boostFactor, (1 - bottomAverage) * boostFactor
 
-font = ImageFont.truetype("/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-B.ttf", 12)
+font = ImageFont.truetype("./cour.ttf", 12)
 
 print "{"
 for char in xrange(33, 127):

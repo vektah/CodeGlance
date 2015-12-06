@@ -74,7 +74,7 @@ class ConfigEntry : Configurable {
         }
 
         config.minLineCount = form!!.minLinesCount
-        configService.dispatch().configChanged()
+        configService.notifyChange()
     }
 
     override fun reset() {

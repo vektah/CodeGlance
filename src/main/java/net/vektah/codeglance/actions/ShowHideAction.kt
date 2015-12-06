@@ -35,6 +35,6 @@ class ShowHideAction : AnAction() {
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         configService.state!!.disabled = !configService.state!!.disabled
-        configService.dispatch().configChanged()
+        configService.notifyChange()
     }
 }

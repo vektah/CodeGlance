@@ -38,7 +38,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.ui.JBColor
 import net.vektah.codeglance.config.Config
-import net.vektah.codeglance.config.ConfigChangeListener
 import net.vektah.codeglance.config.ConfigService
 import net.vektah.codeglance.render.CoordinateHelper
 import net.vektah.codeglance.render.Minimap
@@ -56,7 +55,7 @@ import java.lang.ref.SoftReference
  */
 class GlancePanel(private val project: Project, fileEditor: FileEditor, private val container: JPanel, private val runner: TaskRunner) : JPanel(), VisibleAreaListener {
     private val editor: Editor
-    private var mapRef: SoftReference<Minimap>? = null
+    private var mapRef: SoftReference<Minimap>
     private val logger = Logger.getInstance(javaClass.name)
     private var updatePending: Boolean? = false
     private var dirty = false
@@ -70,10 +69,17 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
     // Anonymous Listeners that should be cleaned up.
     private val componentListener: ComponentListener
     private val documentListener: DocumentListener
-    private val configChangeListener: ConfigChangeListener
     private val mouseWheelListener: MouseWheelListener = MouseWheelListener()
     private val mouseListener: MouseListener = MouseListener()
     private val selectionListener: SelectionListener
+
+    private val onConfigChange = {
+        readConfig()
+        updateImage()
+        updateSize()
+        this@GlancePanel.revalidate()
+        this@GlancePanel.repaint()
+    }
 
     init {
         this.editor = (fileEditor as TextEditor).editor
@@ -94,16 +100,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         }
         editor.document.addDocumentListener(documentListener)
 
-        configChangeListener = object : ConfigChangeListener {
-             override fun configChanged() {
-                readConfig()
-                updateImage()
-                updateSize()
-                this@GlancePanel.revalidate()
-                this@GlancePanel.repaint()
-            }
-        }
-        configService.add(configChangeListener)
+        configService.onChange(onConfigChange)
 
         addMouseWheelListener(mouseWheelListener)
 
@@ -331,17 +328,13 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
     fun onClose() {
         container.removeComponentListener(componentListener)
-
         editor.document.removeDocumentListener(documentListener)
-
-        configService.remove(configChangeListener)
-
         editor.selectionModel.removeSelectionListener(selectionListener)
-
         removeMouseWheelListener(mouseWheelListener)
-
         removeMouseListener(mouseListener)
         removeMouseMotionListener(mouseListener)
+
+        mapRef.clear()
     }
 
     private inner class MouseWheelListener : java.awt.event.MouseWheelListener {
@@ -372,7 +365,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
                 if (config!!.width < 1) {
                     config!!.width = 1
                 }
-                configService.dispatch().configChanged()
+                configService.notifyChange()
             }
 
             if (dragging) {

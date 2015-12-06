@@ -325,12 +325,12 @@ class Minimap(private val config: Config) {
      * @return int color
      */
     private fun setPixel(x: Int, y: Int, color: Int, alpha: Float) {
-        var alpha = alpha
-        if (alpha > 1) alpha = color.toFloat()
-        if (alpha < 0) alpha = 0f
+        var a = alpha
+        if (a > 1) a = color.toFloat()
+        if (a < 0) a = 0f
 
         // abgr is backwards?
-        unpackedColor[3] = (alpha * 255).toInt()
+        unpackedColor[3] = (a * 255).toInt()
         unpackedColor[0] = (color and 16711680) shr 16
         unpackedColor[1] = (color and 65280) shr 8
         unpackedColor[2] = (color and 255)

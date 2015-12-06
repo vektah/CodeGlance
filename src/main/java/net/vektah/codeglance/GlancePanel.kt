@@ -37,11 +37,11 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.ui.JBColor
+import net.vektah.codeglance.concurrent.DirtyLock
 import net.vektah.codeglance.config.Config
 import net.vektah.codeglance.config.ConfigService
 import net.vektah.codeglance.render.CoordinateHelper
 import net.vektah.codeglance.render.Minimap
-import net.vektah.codeglance.render.RenderTask
 import net.vektah.codeglance.render.TaskRunner
 
 import javax.swing.*
@@ -57,14 +57,14 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
     private val editor: Editor
     private var mapRef: SoftReference<Minimap>
     private val logger = Logger.getInstance(javaClass.name)
-    private var updatePending: Boolean? = false
-    private var dirty = false
     private val coords = CoordinateHelper()
     private val configService = ServiceManager.getService(ConfigService::class.java)
-    private var config: Config? = null
+    private var config: Config = configService.state!!
     private var lastFoldCount = -1
     private var viewportColor: Color? = null
     private var lastPanel: BufferedImage? = null
+    private val renderLock = DirtyLock()
+
 
     // Anonymous Listeners that should be cleaned up.
     private val componentListener: ComponentListener
@@ -72,6 +72,9 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
     private val mouseWheelListener: MouseWheelListener = MouseWheelListener()
     private val mouseListener: MouseListener = MouseListener()
     private val selectionListener: SelectionListener
+
+    private val isDisabled: Boolean
+        get() = config.disabled || editor.document.textLength > config.maxFileSize || editor.document.lineCount < config.minLineCount
 
     private val onConfigChange = {
         readConfig()
@@ -121,10 +124,10 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
     }
 
     private fun readConfig() {
-        config = configService.state
+        config = configService.state!!
 
-        coords.setPixelsPerLine(config!!.pixelsPerLine)
-        viewportColor = Color.decode("#" + config!!.viewportColor)
+        coords.setPixelsPerLine(config.pixelsPerLine)
+        viewportColor = Color.decode("#" + config.viewportColor)
     }
 
     /**
@@ -134,13 +137,10 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         if (isDisabled) {
             preferredSize = Dimension(0, 0)
         } else {
-            val size = Dimension(config!!.width, 0)
+            val size = Dimension(config.width, 0)
             preferredSize = size
         }
     }
-
-    private val isDisabled: Boolean
-        get() = config!!.disabled || editor.document.textLength > config!!.maxFileSize || editor.document.lineCount < config!!.minLineCount
 
     /**
      * Fires off a new task to the worker thread. This should only be called from the ui thread.
@@ -151,59 +151,34 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         val file = PsiDocumentManager.getInstance(project).getPsiFile(editor.document) ?: return
 
-        synchronized (this) {
-            // If we have already sent a rendering job off to get processed then first we need to wait for it to finish.
-            // see updateComplete for dirty handling. The is that there will be fast updates plus one final update to
-            // ensure accuracy, dropping any requests in the middle.
-            if (updatePending!!) {
-                dirty = true
-                return
-            }
-            updatePending = true
-        }
+        if (!renderLock.acquire()) return
 
         val hl = SyntaxHighlighterFactory.getSyntaxHighlighter(file.language, project, file.virtualFile)
 
-        var map = mapRef!!.get()
+        var map = mapRef.get()
         if (map == null) {
             map = Minimap(configService.state!!)
             mapRef = SoftReference<Minimap>(map)
         }
 
-        runner.add(RenderTask(map, editor.document.text, editor.colorsScheme, hl, editor.foldingModel.allFoldRegions, Runnable { updateComplete() }))
-    }
+        val text = editor.document.text
+        val folds = editor.foldingModel.allFoldRegions
 
-    private fun updateComplete() {
-        synchronized (this) {
-            updatePending = false
-        }
+        runner.run {
+            map.update(text, editor.colorsScheme, hl, folds)
 
-        if (dirty) {
-            updateImageSoon()
-        }
+            renderLock.release()
 
-        repaint()
-    }
+            if (renderLock.dirty) {
+                updateImageSoon()
+                renderLock.clean()
+            }
 
-    private fun updateImageSoon() {
-        SwingUtilities.invokeLater {
-            updateImage()
-            dirty = false
+            repaint()
         }
     }
 
-    private // Work around for apple going full retard with half pixel pixels.
-            // Removed temporarily as a fix for bugged scaling on OS X
-            //Float scale = (Float)Toolkit.getDefaultToolkit().getDesktopProperty("apple.awt.contentScaleFactor");
-            //if (scale == null) {
-            //	scale = 1.0f;
-            //}
-    val hidpiScale: Float
-        get() {
-            val scale = 1.0f
-
-            return scale
-        }
+    private fun updateImageSoon() = SwingUtilities.invokeLater { updateImage() }
 
     private fun getMapYFromEditorY(y: Int): Int {
         val offset = editor.logicalPositionToOffset(editor.xyToLogicalPosition(Point(0, y)))
@@ -220,11 +195,14 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         val documentEndY = editor.logicalPositionToXY(editor.offsetToLogicalPosition(editor.document.textLength - 1)).getY()
         val visibleArea = editor.scrollingModel.visibleArea
-        coords.setPanelHeight(height).setPanelWidth(width).setPercentageComplete(visibleArea.minY / (documentEndY - (visibleArea.maxY - visibleArea.minY))).setHidpiScale(hidpiScale)
+
+        coords.setPanelHeight(height)
+            .setPanelWidth(width)
+            .setPercentageComplete(visibleArea.minY / (documentEndY - (visibleArea.maxY - visibleArea.minY)))
 
         val dest = coords.imageDestination
 
-        if (updatePending!!) {
+        if (renderLock.locked) {
             if (lastPanel != null) {
                 g.drawImage(lastPanel,
                         dest.x, dest.y, dest.width, dest.height,
@@ -237,7 +215,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         paintSelection(g)
 
-        val minimap = mapRef!!.get()
+        val minimap = mapRef.get()
         if (minimap == null) {
             updateImageSoon()
             return
@@ -248,19 +226,21 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         val src = coords.imageSource
 
         // Draw the image and scale it to stretch vertically.
-        g.drawImage(minimap.img, // source image
-                dest.x, dest.y, dest.width, dest.height,
-                src.x, src.y, src.width, src.height,
-                null)
+        g.drawImage(
+            minimap.img, // source image
+            dest.x, dest.y, dest.width, dest.height,
+            src.x, src.y, src.width, src.height,
+            null
+        )
 
         if (dest.height > 0 && dest.width > 0) {
-
             lastPanel = BufferedImage(dest.width, dest.height, BufferedImage.TYPE_4BYTE_ABGR)
             lastPanel!!.graphics.drawImage(
-                    minimap.img,
-                    dest.x, dest.y, dest.width, dest.height,
-                    src.x, src.y, src.width, src.height,
-                    null)
+                minimap.img,
+                dest.x, dest.y, dest.width, dest.height,
+                src.x, src.y, src.width, src.height,
+                null
+            )
         }
 
         paintVisibleWindow(g)
@@ -292,17 +272,17 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         if (firstSelectedLine == lastSelectedLine) {
             // Single line is easy
-            g.fillRect(firstSelectedCharacter, firstSelectedLine, lastSelectedCharacter - firstSelectedCharacter, config!!.pixelsPerLine)
+            g.fillRect(firstSelectedCharacter, firstSelectedLine, lastSelectedCharacter - firstSelectedCharacter, config.pixelsPerLine)
         } else {
             // Draw the line leading in
-            g.fillRect(firstSelectedCharacter, firstSelectedLine, width - firstSelectedCharacter, config!!.pixelsPerLine)
+            g.fillRect(firstSelectedCharacter, firstSelectedLine, width - firstSelectedCharacter, config.pixelsPerLine)
 
             // Then the line at the end
-            g.fillRect(0, lastSelectedLine, lastSelectedCharacter, config!!.pixelsPerLine)
+            g.fillRect(0, lastSelectedLine, lastSelectedCharacter, config.pixelsPerLine)
 
             if (firstSelectedLine + 1 != lastSelectedLine) {
                 // And if there is anything in between, fill it in
-                g.fillRect(0, firstSelectedLine + config!!.pixelsPerLine, width, lastSelectedLine - firstSelectedLine - config!!.pixelsPerLine)
+                g.fillRect(0, firstSelectedLine + config.pixelsPerLine, width, lastSelectedLine - firstSelectedLine - config.pixelsPerLine)
             }
         }
     }
@@ -361,9 +341,9 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
 
             if (resizing) {
-                config!!.width = widthStart + (resizeStart - e!!.xOnScreen)
-                if (config!!.width < 1) {
-                    config!!.width = 1
+                config.width = widthStart + (resizeStart - e!!.xOnScreen)
+                if (config.width < 1) {
+                    config.width = 1
                 }
                 configService.notifyChange()
             }
@@ -386,7 +366,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
             if (resizing) {
                 resizeStart = e!!.xOnScreen
-                widthStart = config!!.width
+                widthStart = config.width
             }
 
             if (dragging) {
@@ -396,9 +376,9 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
                 val panelY = e!!.y - y
 
-                if (config!!.jumpOnMouseDown && (panelY <= firstVisibleLine || panelY >= (firstVisibleLine + height))) {
+                if (config.jumpOnMouseDown && (panelY <= firstVisibleLine || panelY >= (firstVisibleLine + height))) {
                     editor.scrollingModel.disableAnimation()
-                    editor.scrollingModel.scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e.y, config!!.percentageBasedClick)), ScrollType.CENTER)
+                    editor.scrollingModel.scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e.y, config.percentageBasedClick)), ScrollType.CENTER)
                     editor.scrollingModel.enableAnimation()
                 }
 
@@ -413,8 +393,8 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         }
 
         override fun mouseClicked(e: MouseEvent?) {
-            if (!config!!.jumpOnMouseDown) {
-                editor.scrollingModel.scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e!!.y, config!!.percentageBasedClick)), ScrollType.CENTER)
+            if (!config.jumpOnMouseDown) {
+                editor.scrollingModel.scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e!!.y, config.percentageBasedClick)), ScrollType.CENTER)
             }
         }
 

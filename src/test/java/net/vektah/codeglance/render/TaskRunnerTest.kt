@@ -26,17 +26,18 @@
 package net.vektah.codeglance.render
 
 import org.testng.annotations.Test
-
-import org.mockito.Mockito.*
+import org.testng.Assert.*
 
 class TaskRunnerTest {
     @Test fun testTimerTask() {
         val runner = TaskRunner()
         Thread(runner).start()
 
-        val task = mock(Runnable::class.java)
+        var ran = false
 
-        runner.add(task)
+        runner.run {
+            ran = true
+        }
 
         try {
             Thread.sleep(50)
@@ -46,6 +47,6 @@ class TaskRunnerTest {
 
         runner.stop()
 
-        verify(task).run()
+        assertTrue(ran)
     }
 }

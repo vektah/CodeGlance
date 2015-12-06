@@ -25,8 +25,6 @@
 
 package net.vektah.codeglance.render
 
-import com.intellij.openapi.diagnostic.Logger
-
 import java.util.concurrent.ArrayBlockingQueue
 
 /**
@@ -34,13 +32,9 @@ import java.util.concurrent.ArrayBlockingQueue
  */
 class TaskRunner : Runnable {
     private var stop = false
-    private val taskQueue = ArrayBlockingQueue<Runnable>(1000)
-    private val logger = Logger.getInstance(javaClass)
+    private val taskQueue = ArrayBlockingQueue<() -> Unit>(1000)
 
-    fun add(task: Runnable) {
-        logger.debug("Added new task")
-        taskQueue.add(task)
-    }
+    fun run(task: () -> Unit) = taskQueue.add(task)
 
     fun stop() {
         stop = true
@@ -49,13 +43,10 @@ class TaskRunner : Runnable {
     override fun run() {
         while (!stop) {
             try {
-                logger.debug("Starting task")
-                taskQueue.take().run()
-                logger.debug("Task completed")
+                taskQueue.take()()
             } catch (e: InterruptedException) {
                 return
             }
-
         }
     }
 }

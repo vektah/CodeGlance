@@ -1,0 +1,45 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    }
+}
+
+plugins {
+    id "org.jetbrains.intellij" version "0.0.32"
+}
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'kotlin'
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
+    apply plugin: 'org.jetbrains.intellij'
+    intellij {
+        version ideaVersion
+        plugins 'coverage'
+        pluginName 'CodeGlance'
+    }
+
+    test {
+        useTestNG()
+    }
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/java'
+    test.kotlin.srcDirs += 'src/test/java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    testCompile "org.testng:testng:6.8.5"
+}

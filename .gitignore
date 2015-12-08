@@ -1,7 +1,5 @@
 /.idea
-/target
-/codeglance.xml
+/.gradle
+/build
 *.iml
 *.jar
-/module_codeglance.xml
-out

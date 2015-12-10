@@ -23,6 +23,7 @@ allprojects {
         version ideaVersion
         plugins 'coverage'
         pluginName 'CodeGlance'
+        updateSinceUntilBuild = false
     }
 
     test {

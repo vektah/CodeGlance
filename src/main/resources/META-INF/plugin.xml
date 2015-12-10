@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Vektah/CodeGlance">
 	<id>net.vektah.codeglance</id>
 	<name>CodeGlance</name>
-	<version>1.4.3</version>
+	<version>1.4.4</version>
 	<vendor email="adam@vektah.net" url="https://github.com/Vektah/CodeGlance">Vektah</vendor>
 
 	<description>
@@ -10,6 +10,10 @@
 	</description>
 
 	<change-notes><![CDATA[
+		<h3>1.4.4</h3>
+		<ul>
+			<li>Increase maximum file size to 1MB, up from 20k</li>
+		</ul>
 		<h3>1.4.3</h3>
 		<ul>
 			<li>Fixed a memory leak</li>

@@ -146,7 +146,7 @@ class CoordinateHelper {
         if (imageHeight < panelHeight) {
             return (line.toFloat() * pixelsPerLine.toFloat() * hidpiScale).toInt()
         } else {
-            return (line.toFloat() * pixelsPerLine.toFloat() * hidpiScale - offset).toInt()
+            return (line.toFloat() * pixelsPerLine.toFloat() * hidpiScale - this.offset).toInt()
         }
     }
 

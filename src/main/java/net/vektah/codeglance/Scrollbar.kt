@@ -124,8 +124,6 @@ class Scrollbar(val editor: Editor, val coords : CoordinateHelper) : JPanel(), M
 
         // Draw the current viewport
         g.color = viewportColor
-        g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.50f)
-        g.drawRect(0, firstVisibleLine, width, height)
         g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f)
         g.fillRect(0, firstVisibleLine, width, height)
     }

@@ -28,7 +28,7 @@ package net.vektah.codeglance.config
 class Config {
     public var pixelsPerLine: Int = 3
     public var minLineCount: Int = 1
-    public var maxFileSize: Int = 20480
+    public var maxFileSize: Int = 1024000
     public var disabled: Boolean = false
     public var jumpOnMouseDown: Boolean = true
     public var percentageBasedClick: Boolean = false

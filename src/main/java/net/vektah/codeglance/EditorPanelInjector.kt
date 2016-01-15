@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.JBSplitter
 import net.vektah.codeglance.render.TaskRunner
 
 import javax.swing.*
@@ -35,6 +36,9 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
      * if we have already injected into a given component... On the plus side might be a bit closer to being able to
      * injecting into the editor space itself...
      *
+     * vsch: added handling when the editor is even deeper, inside firstComponent of a JBSplitter, used by idea-multimarkdown
+     * and Markdown Support to show split preview. Missed this plugin while editing markdown. These changes got it back.
+     *
      * @param editor A text editor to inject into.
      */
     private fun inject(editor: FileEditor) {
@@ -46,7 +50,15 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
         try {
             val outerPanel = editor.component as JPanel
             val outerLayout = outerPanel.layout as BorderLayout
-            val pane = outerLayout.getLayoutComponent(BorderLayout.CENTER) as JLayeredPane
+            var layoutComponent = outerLayout.getLayoutComponent(BorderLayout.CENTER)
+
+            if (layoutComponent is JBSplitter) {
+                // editor is inside firstComponent of a JBSplitter
+                val editorComp = layoutComponent.firstComponent as JPanel
+                layoutComponent = (editorComp.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
+            }
+
+            val pane = layoutComponent as JLayeredPane
             val panel = pane.getComponent(1) as JPanel
             val innerLayout = panel.layout as BorderLayout
 

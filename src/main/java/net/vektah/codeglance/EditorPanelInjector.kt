@@ -86,7 +86,15 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
         try {
             val outerPanel = editor.component as JPanel
             val outerLayout = outerPanel.layout as BorderLayout
-            val pane = outerLayout.getLayoutComponent(BorderLayout.CENTER) as JLayeredPane
+            var layoutComponent = outerLayout.getLayoutComponent(BorderLayout.CENTER)
+
+            if (layoutComponent is JBSplitter) {
+                // editor is inside firstComponent of a JBSplitter
+                val editorComp = layoutComponent.firstComponent as JPanel
+                layoutComponent = (editorComp.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
+            }
+
+            val pane = layoutComponent as JLayeredPane
             val panel = pane.getComponent(1) as JPanel
             val innerLayout = panel.layout as BorderLayout
 

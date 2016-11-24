@@ -71,7 +71,8 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
                 logger.warn("I07: Injection skipped. Looks like we have already injected something here.")
             }
         } catch (e: ClassCastException) {
-            logger.warn("Injection failed '%s' on line %d.".format(e.message, e.getStackTrace()[0].lineNumber))
+            logger.warn("Injection failed")
+            e.printStackTrace()
             return
         }
 
@@ -104,7 +105,8 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
                 panel.remove(glancePanel)
             }
         } catch (e: ClassCastException) {
-            logger.warn("Uninjection failed '%s' on line %d.".format(e.message, e.getStackTrace()[0].lineNumber))
+            logger.warn("Uninjection failed")
+            e.printStackTrace()
             return
         }
 

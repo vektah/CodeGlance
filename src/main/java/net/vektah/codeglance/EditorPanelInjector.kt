@@ -80,8 +80,6 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
             val glancePanel = GlancePanel(project, editor, panel, runner)
             panel.add(glancePanel, BorderLayout.LINE_END)
             panels.put(editor, glancePanel)
-        } else {
-            logger.warn("I07: Injection skipped. Looks like we have already injected something here.")
         }
     }
 

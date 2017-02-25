@@ -32,19 +32,18 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
     /**
      * Here be dragons. No Seriously. Run!
      *
-     * There is a loading pane that proxies stuff here blah blah.. We need to dig down so we can check
-     * if we have already injected into a given component... On the plus side might be a bit closer to being able to
-     * injecting into the editor space itself...
+     * We are digging way down into the editor layout. This lets the codeglance panel be right next to the scroll bar.
+     * In an ideal world it would be inside the scroll bar... maybe one day.
      *
      * vsch: added handling when the editor is even deeper, inside firstComponent of a JBSplitter, used by idea-multimarkdown
      * and Markdown Support to show split preview. Missed this plugin while editing markdown. These changes got it back.
      *
      * @param editor A text editor to inject into.
      */
-    private fun inject(editor: FileEditor) {
+    private fun getPanel(editor: FileEditor): JPanel? {
         if (editor !is TextEditor) {
             logger.debug("I01: Injection failed, only text editors are supported currently.")
-            return
+            return null
         }
 
         try {
@@ -59,57 +58,42 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
             }
 
             val pane = layoutComponent as JLayeredPane
-            val panel = pane.getComponent(1) as JPanel
-            val innerLayout = panel.layout as BorderLayout
 
-            // Ok we finally found the actual editor layout. Now make sure we haven't already injected into this editor.
-            if (innerLayout.getLayoutComponent(BorderLayout.LINE_END) == null) {
-                val glancePanel = GlancePanel(project, editor, panel, runner)
-                panel.add(glancePanel, BorderLayout.LINE_END)
-                panels.put(editor, glancePanel)
+            if (pane.getComponentCount() > 1) {
+                return pane.getComponent(1) as JPanel
             } else {
-                logger.warn("I07: Injection skipped. Looks like we have already injected something here.")
+                return pane.getComponent(0) as JPanel
             }
         } catch (e: ClassCastException) {
             logger.warn("Injection failed")
             e.printStackTrace()
-            return
+            return null
         }
+    }
 
+
+    private fun inject(editor: FileEditor) {
+        val panel = getPanel(editor) ?: return
+        val innerLayout = panel.layout as BorderLayout
+
+        if (innerLayout.getLayoutComponent(BorderLayout.LINE_END) == null) {
+            val glancePanel = GlancePanel(project, editor, panel, runner)
+            panel.add(glancePanel, BorderLayout.LINE_END)
+            panels.put(editor, glancePanel)
+        } else {
+            logger.warn("I07: Injection skipped. Looks like we have already injected something here.")
+        }
     }
 
     private fun uninject(editor: FileEditor) {
-        if (editor !is TextEditor) {
-            logger.debug("I01: Uninjection failed, only text editors are supported currently.")
-            return
+        val panel = getPanel(editor) ?: return
+        val innerLayout = panel.layout as BorderLayout
+
+        // Ok we finally found the actual editor layout. Now make sure we have already injected into this editor.
+        val glancePanel = innerLayout.getLayoutComponent(BorderLayout.LINE_END)
+        if (glancePanel != null) {
+            panel.remove(glancePanel)
         }
-
-        try {
-            val outerPanel = editor.component as JPanel
-            val outerLayout = outerPanel.layout as BorderLayout
-            var layoutComponent = outerLayout.getLayoutComponent(BorderLayout.CENTER)
-
-            if (layoutComponent is JBSplitter) {
-                // editor is inside firstComponent of a JBSplitter
-                val editorComp = layoutComponent.firstComponent as JPanel
-                layoutComponent = (editorComp.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
-            }
-
-            val pane = layoutComponent as JLayeredPane
-            val panel = pane.getComponent(1) as JPanel
-            val innerLayout = panel.layout as BorderLayout
-
-            // Ok we finally found the actual editor layout. Now make sure we haven't already injected into this editor.
-            val glancePanel = innerLayout.getLayoutComponent(BorderLayout.LINE_END)
-            if (glancePanel != null) {
-                panel.remove(glancePanel)
-            }
-        } catch (e: ClassCastException) {
-            logger.warn("Uninjection failed")
-            e.printStackTrace()
-            return
-        }
-
     }
 
     override fun fileClosed(fem: FileEditorManager, virtualFile: VirtualFile) {

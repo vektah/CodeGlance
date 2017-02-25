@@ -196,13 +196,7 @@ class Minimap(private val config: Config) {
      * @return true if the given position is folded.
      */
     private fun isFolded(position: Int, regions: Array<FoldRegion>): Boolean {
-        for (region in regions) {
-            if (!region.isExpanded && region.startOffset < position && position < region.endOffset) {
-                return true
-            }
-        }
-
-        return false
+        return regions.any { !it.isExpanded && it.startOffset < position && position < it.endOffset }
     }
 
     /**

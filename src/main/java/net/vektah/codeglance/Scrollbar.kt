@@ -42,8 +42,10 @@ class Scrollbar(val editor: Editor, val coords : CoordinateHelper) : JPanel(), M
     override fun mouseDragged(e: MouseEvent?) {
         if (resizing) {
             config.width = widthStart + (resizeStart - e!!.xOnScreen)
-            if (config.width < 1) {
-                config.width = 1
+            if (config.width < 50) {
+                config.width = 50
+            } else if (config.width > 250) {
+                config.width = 250
             }
             configService.notifyChange()
         }

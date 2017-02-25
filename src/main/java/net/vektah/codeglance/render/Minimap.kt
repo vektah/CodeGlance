@@ -257,9 +257,9 @@ class Minimap(private val config: Config) {
             // Render whole token, make sure multi lines are handled gracefully.
             for (i in start..lexer.tokenEnd - 1) {
                 // Don't render folds.
-                if (isFolded(i, folding)) {
-                    continue
-                }
+                if (isFolded(i, folding)) continue
+                // Watch out for tokens that extend past the document... bad plugins? see issue #138
+                if (i >= text.length) return
 
                 ch = text[i]
 

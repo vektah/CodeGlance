@@ -2,7 +2,7 @@ CodeGlance [![Build Status](https://travis-ci.org/Vektah/CodeGlance.png?branch=m
 ==========
 
 Plugin Repository: http://plugins.jetbrains.com/plugin/7275  
-Latest build: http://public.vektah.net/codeglance/net/vektah/CodeGlance/1.4.4/CodeGlance-1.4.4.jar
+Latest build: https://github.com/Vektah/CodeGlance/releases
 
 Intelij plugin that displays a zoomed out overview or minimap similar to the one found in Sublime into the editor pane. The minimap allows for quick scrolling letting you jump straight to sections of code.
 

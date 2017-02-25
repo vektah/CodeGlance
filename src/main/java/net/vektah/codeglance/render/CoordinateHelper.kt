@@ -117,20 +117,18 @@ class CoordinateHelper {
      * ScreenSpace: Raw position the user can see. This is a scrolling window for long documents!
      */
     fun screenSpaceToOffset(y: Int, dragged: Boolean): Int {
-        var y = y
-        if (y < 0) y = 0
-        if (y > panelHeight) y = panelHeight
+        val clampedY = clamp(y, 0, panelHeight)
         val line: Int
 
         if (imageHeight < panelHeight) {
             // If the panel is short enough to fit on the screen then 1:1 is good.
-            line = (y / pixelsPerLine * hidpiScale).toInt()
+            line = (clampedY / pixelsPerLine * hidpiScale).toInt()
         } else if (dragged) {
             // If we are dragging, then act like a conventional scroll bar.
-            line = (y / panelHeight.toFloat() * imageHeight).toInt() / pixelsPerLine
+            line = (clampedY / panelHeight.toFloat() * imageHeight).toInt() / pixelsPerLine
         } else {
             // Otherwise 1:1 with an offset so that clicks in long documents line up correctly.
-            line = ((y + offset) / pixelsPerLine * hidpiScale).toInt()
+            line = ((clampedY + offset) / pixelsPerLine * hidpiScale).toInt()
         }
 
         if (map == null) return line * pixelsPerLine

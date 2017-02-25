@@ -125,13 +125,11 @@ class Minimap(private val config: Config) {
      * @return 3 element array, [line_number, o]
      */
     fun getLine(i: Int): LineInfo {
-        var i = i
         // We can get called before the line scan has been done. Just return the first line.
         if (line_endings == null) return NO_LINES
         if (line_endings!!.size == 0) return NO_LINES
         val lines = line_endings!![line_endings!!.size - 1]
-        if (i > lines) i = lines
-        if (i < 0) i = 0
+
         // Dummy entries if there are no lines
         if (line_endings!!.size == 0) return NO_LINES
         if (line_endings!!.size == 1) return NO_LINES
@@ -142,21 +140,23 @@ class Minimap(private val config: Config) {
         var index_mid: Int
         var value: Int
 
+        val clampedI = clamp(i, 0, lines)
+
         while (true) {
             index_mid = Math.floor(((index_min + index_max) / 2.0f).toDouble()).toInt() // Key space is pretty linear, might be able to use that to scale our next point.
             value = line_endings!![index_mid]
 
-            if (value < i) {
-                if (i < line_endings!![index_mid + 1]) return LineInfo(index_mid + 1, value + 1, line_endings!![index_mid + 1])
+            if (value < clampedI) {
+                if (clampedI < line_endings!![index_mid + 1]) return LineInfo(index_mid + 1, value + 1, line_endings!![index_mid + 1])
 
                 index_min = index_mid + 1
-            } else if (i < value) {
-                if (line_endings!![index_mid - 1] < i) return LineInfo(index_mid, line_endings!![index_mid - 1] + 1, value)
+            } else if (clampedI < value) {
+                if (line_endings!![index_mid - 1] < clampedI) return LineInfo(index_mid, line_endings!![index_mid - 1] + 1, value)
 
                 index_max = index_mid - 1
             } else {
                 // character at i is actually a newline, so grab the line before it.
-                return LineInfo(index_mid, line_endings!![index_mid - 1] + 1, i)
+                return LineInfo(index_mid, line_endings!![index_mid - 1] + 1, clampedI)
             }
         }
     }
@@ -213,7 +213,6 @@ class Minimap(private val config: Config) {
         updateDimensions(text, folding)
 
         var color: Int
-        val bgcolor = colorScheme.defaultBackground.rgb
         var ch: Char
         var startLine: LineInfo
         var topWeight: Float

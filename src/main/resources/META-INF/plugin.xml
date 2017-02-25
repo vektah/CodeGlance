@@ -10,6 +10,12 @@
 	</description>
 
 	<change-notes><![CDATA[
+		<h3>1.4.6</h3>
+		<ul>
+			<li>Add min and max width</li>
+			<li>Remove a useless warning</li>
+			<li>Fix a bug when encountering tokens past the end of the document</li>
+		</ul>
 		<h3>1.4.5</h3>
 		<ul>
 			<li>Add support for 171.3556 EAPs</li>

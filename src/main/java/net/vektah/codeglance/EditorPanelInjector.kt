@@ -1,16 +1,17 @@
 package net.vektah.codeglance
 
+import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBSplitter
+import net.vektah.codeglance.config.Config
+import net.vektah.codeglance.config.ConfigService
 import net.vektah.codeglance.render.TaskRunner
-
 import javax.swing.*
 import java.awt.*
 import java.util.*
-import javax.swing.border.Border
 
 /**
  * Injects a panel into any newly created editors.
@@ -18,6 +19,8 @@ import javax.swing.border.Border
 class EditorPanelInjector(private val project: Project, private val runner: TaskRunner) : FileEditorManagerListener {
     private val logger = Logger.getInstance(javaClass)
     private val panels = HashMap<FileEditor, GlancePanel>()
+    private val configService = ServiceManager.getService(ConfigService::class.java)
+    private var config: Config = configService.state!!
 
     override fun fileOpened(fem: FileEditorManager, virtualFile: VirtualFile) {
         // Seems there is a case where multiple split panes can have the same file open and getSelectedEditor, and even
@@ -76,9 +79,11 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
         val panel = getPanel(editor) ?: return
         val innerLayout = panel.layout as BorderLayout
 
-        if (innerLayout.getLayoutComponent(BorderLayout.LINE_END) == null) {
+        val where = if (config.isRightAligned) BorderLayout.LINE_END else BorderLayout.LINE_START
+
+        if (innerLayout.getLayoutComponent(where) == null) {
             val glancePanel = GlancePanel(project, editor, panel, runner)
-            panel.add(glancePanel, BorderLayout.LINE_END)
+            panel.add(glancePanel, where)
             panels.put(editor, glancePanel)
         }
     }
@@ -88,9 +93,14 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
         val innerLayout = panel.layout as BorderLayout
 
         // Ok we finally found the actual editor layout. Now make sure we have already injected into this editor.
-        val glancePanel = innerLayout.getLayoutComponent(BorderLayout.LINE_END)
-        if (glancePanel != null) {
-            panel.remove(glancePanel)
+        val rightPanel = innerLayout.getLayoutComponent(BorderLayout.LINE_END)
+        if (rightPanel != null) {
+            panel.remove(rightPanel)
+        }
+
+        val leftPanel = innerLayout.getLayoutComponent(BorderLayout.LINE_START)
+        if (leftPanel != null) {
+            panel.remove(leftPanel)
         }
     }
 

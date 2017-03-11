@@ -13,7 +13,6 @@ class Scrollbar(val editor: Editor, val scrollstate : ScrollState) : JPanel(), M
     private var scrollStart: Int = 0
     private var mouseStart: Int = 0
     private val defaultCursor = Cursor(Cursor.DEFAULT_CURSOR)
-    private val resizeCursor = Cursor(Cursor.W_RESIZE_CURSOR)
     private var resizing = false
     private var dragging = false
     private var resizeStart: Int = 0
@@ -25,7 +24,13 @@ class Scrollbar(val editor: Editor, val scrollstate : ScrollState) : JPanel(), M
     override fun mouseEntered(e: MouseEvent?) {}
     override fun mouseExited(e: MouseEvent?) {}
 
-    private fun isInReizeGutter(x: Int): Boolean = x >= 0 && x < 8
+    private fun isInReizeGutter(x: Int): Boolean {
+        if (config.isRightAligned) {
+            return x >= 0 && x < 8
+        } else {
+            return x >= config.width - 8 && x <= config.width
+        }
+    }
 
     init {
         configService.onChange {
@@ -40,7 +45,7 @@ class Scrollbar(val editor: Editor, val scrollstate : ScrollState) : JPanel(), M
 
     override fun mouseDragged(e: MouseEvent?) {
         if (resizing) {
-            config.width = widthStart + (resizeStart - e!!.xOnScreen)
+            config.width = widthStart + if(config.isRightAligned) resizeStart - e!!.xOnScreen else e!!.xOnScreen - resizeStart
             if (config.width < 50) {
                 config.width = 50
             } else if (config.width > 250) {
@@ -98,7 +103,7 @@ class Scrollbar(val editor: Editor, val scrollstate : ScrollState) : JPanel(), M
 
     override fun mouseMoved(e: MouseEvent?) {
         if (isInReizeGutter(e!!.x)) {
-            cursor = resizeCursor
+            cursor = if (config.isRightAligned) Cursor(Cursor.W_RESIZE_CURSOR) else Cursor(Cursor.E_RESIZE_CURSOR)
         } else {
             cursor = defaultCursor
         }

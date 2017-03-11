@@ -3,6 +3,5 @@
 /build
 /out
 *.iml
-*.jar
 *.ipr
 *.iws

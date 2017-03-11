@@ -20,20 +20,19 @@ Light:
 ![Default](https://raw.github.com/Vektah/CodeGlance/master/pub/light.png)
 
 
-Building using maven
+Building using gradle
 ====================
-With gradle installed you can:
 ```
 git clone https://github.com/Vektah/CodeGlance
 cd CodeGlance
 # run the tests
-gradle test
+./gradlew test
 
 # build the plugin and install it in the sandbox then start idea
-gradle runIdea
+./gradlew runIdea
 
 # build a release
-gradle buildPlugin
+./gradlew buildPlugin
 
 ```
 The result will be saved as build/distributions/CodeGlance-{version}.zip

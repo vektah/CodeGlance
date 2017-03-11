@@ -10,6 +10,7 @@ import net.vektah.codeglance.render.TaskRunner
 import javax.swing.*
 import java.awt.*
 import java.util.*
+import javax.swing.border.Border
 
 /**
  * Injects a panel into any newly created editors.
@@ -58,19 +59,18 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
             }
 
             val pane = layoutComponent as JLayeredPane
+            val panel = if (pane.componentCount > 1) pane.getComponent(1) as JPanel else pane.getComponent(0) as JPanel
 
-            if (pane.getComponentCount() > 1) {
-                return pane.getComponent(1) as JPanel
-            } else {
-                return pane.getComponent(0) as JPanel
-            }
+            // Assert ahead of time that we have the expected layout, so the caller dosent need to
+            panel.layout as BorderLayout
+
+            return panel
         } catch (e: ClassCastException) {
             logger.warn("Injection failed")
             e.printStackTrace()
             return null
         }
     }
-
 
     private fun inject(editor: FileEditor) {
         val panel = getPanel(editor) ?: return

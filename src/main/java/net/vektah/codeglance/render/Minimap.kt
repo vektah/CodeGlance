@@ -215,8 +215,6 @@ class Minimap(private val config: Config) {
         var color: Int
         var ch: Char
         var startLine: LineInfo
-        var topWeight: Float
-        var bottomWeight: Float
         val lexer = hl.highlightingLexer
         var tokenType: IElementType?
 
@@ -272,40 +270,80 @@ class Minimap(private val config: Config) {
                     x += 1
                 }
 
-                topWeight = GetTopWeight(text[i].toInt())
-                bottomWeight = GetBottomWeight(text[i].toInt())
-
-                // No point rendering non visible characters.
-                if (topWeight == 0.0f) continue
-
                 if (0 <= x && x < img!!.width && 0 <= y && y + config.pixelsPerLine < img!!.height) {
-                    when (config.pixelsPerLine) {
-                        1 -> // Cant show whitespace between lines any more. This looks rather ugly...
-                            setPixel(x, y + 1, color, ((topWeight + bottomWeight) / 2.0).toFloat())
-
-                        2 -> {
-                            // Two lines we make the top line a little lighter to give the illusion of whitespace between lines.
-                            setPixel(x, y, color, topWeight * 0.5f)
-                            setPixel(x, y + 1, color, bottomWeight)
-                        }
-                        3 -> {
-                            // Three lines we make the top nearly empty, and fade the bottom a little too
-                            setPixel(x, y, color, topWeight * 0.3f)
-                            setPixel(x, y + 1, color, ((topWeight + bottomWeight) / 2.0).toFloat())
-                            setPixel(x, y + 2, color, bottomWeight * 0.7f)
-                        }
-                        4 -> {
-                            // Empty top line, Nice blend for everything else
-                            setPixel(x, y + 1, color, topWeight)
-                            setPixel(x, y + 2, color, ((topWeight + bottomWeight) / 2.0).toFloat())
-                            setPixel(x, y + 3, color, bottomWeight)
-                        }
+                    if (config.clean) {
+                        renderClean(x, y, text[i].toInt(), color)
+                    } else {
+                        renderAccurate(x, y, text[i].toInt(), color)
                     }
                 }
             }
 
             lexer.advance()
             tokenType = lexer.tokenType
+        }
+    }
+
+    private fun renderClean(x: Int, y: Int, char: Int, color: Int) {
+        val weight = when (char) {
+            in 0..32 -> 0.0f
+            in 33..126 -> 0.8f
+            else -> 0.4f
+        }
+
+        if (weight == 0.0f) return
+
+        when (config.pixelsPerLine) {
+            1 -> // Cant show whitespace between lines any more. This looks rather ugly...
+                setPixel(x, y + 1, color, weight * 0.6f)
+
+            2 -> {
+                // Two lines we make the top line a little lighter to give the illusion of whitespace between lines.
+                setPixel(x, y, color, weight * 0.3f)
+                setPixel(x, y + 1, color, weight * 0.6f)
+            }
+            3 -> {
+                // Three lines we make the top nearly empty, and fade the bottom a little too
+                setPixel(x, y, color, weight * 0.1f)
+                setPixel(x, y + 1, color, weight * 0.6f)
+                setPixel(x, y + 2, color, weight * 0.6f)
+            }
+            4 -> {
+                // Empty top line, Nice blend for everything else
+                setPixel(x, y + 1, color, weight * 0.6f)
+                setPixel(x, y + 2, color, weight * 0.6f)
+                setPixel(x, y + 3, color, weight * 0.6f)
+            }
+        }
+    }
+
+    private fun renderAccurate(x: Int, y: Int, char: Int, color: Int) {
+        val topWeight = GetTopWeight(char)
+        val bottomWeight = GetBottomWeight(char)
+        // No point rendering non visible characters.
+        if (topWeight == 0.0f && bottomWeight == 0.0f) return
+
+        when (config.pixelsPerLine) {
+            1 -> // Cant show whitespace between lines any more. This looks rather ugly...
+                setPixel(x, y + 1, color, ((topWeight + bottomWeight) / 2.0).toFloat())
+
+            2 -> {
+                // Two lines we make the top line a little lighter to give the illusion of whitespace between lines.
+                setPixel(x, y, color, topWeight * 0.5f)
+                setPixel(x, y + 1, color, bottomWeight)
+            }
+            3 -> {
+                // Three lines we make the top nearly empty, and fade the bottom a little too
+                setPixel(x, y, color, topWeight * 0.3f)
+                setPixel(x, y + 1, color, ((topWeight + bottomWeight) / 2.0).toFloat())
+                setPixel(x, y + 2, color, bottomWeight * 0.7f)
+            }
+            4 -> {
+                // Empty top line, Nice blend for everything else
+                setPixel(x, y + 1, color, topWeight)
+                setPixel(x, y + 2, color, ((topWeight + bottomWeight) / 2.0).toFloat())
+                setPixel(x, y + 3, color, bottomWeight)
+            }
         }
     }
 

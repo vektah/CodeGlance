@@ -51,11 +51,15 @@ class ConfigEntry : Configurable {
         return form!!.root
     }
 
-    override fun isModified(): Boolean {
-        if (form == null) return false
-
-        return config.pixelsPerLine != form!!.pixelsPerLine || config.disabled != form!!.isDisabled || config.jumpOnMouseDown != form!!.jumpOnMouseDown() || config.percentageBasedClick != form!!.percentageBasedClick() || config.width != form!!.width || config.viewportColor !== form!!.viewportColor || config.minLineCount != form!!.minLinesCount
-    }
+    override fun isModified() = form != null &&
+            (config.pixelsPerLine != form!!.pixelsPerLine
+            || config.disabled != form!!.isDisabled
+            || config.jumpOnMouseDown != form!!.jumpOnMouseDown()
+            || config.percentageBasedClick != form!!.percentageBasedClick()
+            || config.width != form!!.width
+            || config.viewportColor !== form!!.viewportColor
+            || config.minLineCount != form!!.minLinesCount
+            || config.clean != form!!.cleanStyle)
 
     @Throws(ConfigurationException::class)
     override fun apply() {
@@ -74,6 +78,7 @@ class ConfigEntry : Configurable {
         }
 
         config.minLineCount = form!!.minLinesCount
+        config.clean = form!!.cleanStyle
         configService.notifyChange()
     }
 
@@ -87,6 +92,7 @@ class ConfigEntry : Configurable {
         form!!.viewportColor = config.viewportColor
         form!!.width = config.width
         form!!.minLinesCount = config.minLineCount
+        form!!.cleanStyle = config.clean
     }
 
     override fun disposeUIResources() {

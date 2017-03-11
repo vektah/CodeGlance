@@ -42,11 +42,13 @@ public class ConfigForm {
 	private JTextField width;
 	private JTextField viewportColor;
 	private JTextField minLinesCount;
+	private JComboBox renderStyle;
 
 	public ConfigForm() {
 		pixelsPerLine.setModel(new DefaultComboBoxModel(new Integer[]{1, 2, 3, 4}));
 		jumpToPosition.setModel(new DefaultComboBoxModel(new String[]{"Mouse Down", "Mouse Up"}));
 		clickStyle.setModel(new DefaultComboBoxModel(new String[]{"Scrollbar (old sublime)", "To Text (new sublime)"}));
+		renderStyle.setModel(new DefaultComboBoxModel(new String[]{"Clean", "Accurate"}));
 	}
 
 	public JPanel getRoot() {
@@ -91,6 +93,14 @@ public class ConfigForm {
 
 	public void setViewportColor(String color) {
 		viewportColor.setText(color);
+	}
+
+	public boolean getCleanStyle() {
+		return renderStyle.getSelectedIndex() == 0;
+	}
+
+	public void setCleanStyle(boolean isClean) {
+		renderStyle.setSelectedIndex(isClean ? 0 : 1);
 	}
 
 	public int getWidth() {

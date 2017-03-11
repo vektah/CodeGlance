@@ -2,15 +2,14 @@ package net.vektah.codeglance
 
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.ScrollType
 import net.vektah.codeglance.config.Config
 import net.vektah.codeglance.config.ConfigService
-import net.vektah.codeglance.render.CoordinateHelper
+import net.vektah.codeglance.render.ScrollState
 import java.awt.*
 import java.awt.event.*
 import javax.swing.JPanel
 
-class Scrollbar(val editor: Editor, val coords : CoordinateHelper) : JPanel(), MouseListener, MouseWheelListener, MouseMotionListener {
+class Scrollbar(val editor: Editor, val scrollstate : ScrollState) : JPanel(), MouseListener, MouseWheelListener, MouseMotionListener {
     private var scrollStart: Int = 0
     private var mouseStart: Int = 0
     private val defaultCursor = Cursor(Cursor.DEFAULT_CURSOR)
@@ -21,7 +20,7 @@ class Scrollbar(val editor: Editor, val coords : CoordinateHelper) : JPanel(), M
     private var widthStart: Int = 0
     private val configService = ServiceManager.getService(ConfigService::class.java)
     private var config: Config = configService.state!!
-    private var viewportColor: Color = Color.decode("#" + config.viewportColor)
+    private var visibleRectColor: Color = Color.decode("#" + config.viewportColor)
 
     override fun mouseEntered(e: MouseEvent?) {}
     override fun mouseExited(e: MouseEvent?) {}
@@ -31,7 +30,7 @@ class Scrollbar(val editor: Editor, val coords : CoordinateHelper) : JPanel(), M
     init {
         configService.onChange {
             config = configService.state!!
-            viewportColor = Color.decode("#" + config.viewportColor)
+            visibleRectColor = Color.decode("#" + config.viewportColor)
         }
 
         addMouseWheelListener(this)
@@ -53,8 +52,7 @@ class Scrollbar(val editor: Editor, val coords : CoordinateHelper) : JPanel(), M
         if (dragging) {
             // Disable animation when dragging for better experience.
             editor.scrollingModel.disableAnimation()
-
-            editor.scrollingModel.scrollVertically(scrollStart + coords.pixelsToLines(e!!.y - mouseStart) * editor.lineHeight)
+            scrollTo(e!!.y)
             editor.scrollingModel.enableAnimation()
         }
     }
@@ -72,21 +70,19 @@ class Scrollbar(val editor: Editor, val coords : CoordinateHelper) : JPanel(), M
         }
 
         if (dragging) {
-            val visibleArea = editor.scrollingModel.visibleArea
-            val firstVisibleLine = getMapYFromEditorY(visibleArea.minY.toInt())
-            val height = coords.linesToPixels(((visibleArea.maxY - visibleArea.minY) / editor.lineHeight).toInt())
-
-            val panelY = e!!.y - y
-
-            if (config.jumpOnMouseDown && (panelY <= firstVisibleLine || panelY >= (firstVisibleLine + height))) {
-                editor.scrollingModel.disableAnimation()
-                editor.scrollingModel.scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e.y, config.percentageBasedClick)), ScrollType.CENTER)
-                editor.scrollingModel.enableAnimation()
+            if (config.jumpOnMouseDown) {
+                scrollTo(e!!.y)
             }
 
             scrollStart = editor.scrollingModel.verticalScrollOffset
-            mouseStart = e.y
+            mouseStart = e!!.y
         }
+    }
+
+    private fun scrollTo(y: Int) {
+        val percentage = (y + scrollstate.visibleStart) / scrollstate.documentHeight.toFloat()
+        val offset = editor.component.size.height / 2
+        editor.scrollingModel.scrollVertically((percentage * editor.contentComponent.size.height - offset).toInt())
     }
 
     override fun mouseReleased(e: MouseEvent?) {
@@ -96,7 +92,7 @@ class Scrollbar(val editor: Editor, val coords : CoordinateHelper) : JPanel(), M
 
     override fun mouseClicked(e: MouseEvent?) {
         if (!config.jumpOnMouseDown) {
-            editor.scrollingModel.scrollTo(editor.offsetToLogicalPosition(coords.screenSpaceToOffset(e!!.y, config.percentageBasedClick)), ScrollType.CENTER)
+            scrollTo(e!!.y)
         }
     }
 
@@ -112,21 +108,11 @@ class Scrollbar(val editor: Editor, val coords : CoordinateHelper) : JPanel(), M
         editor.scrollingModel.scrollVertically(editor.scrollingModel.verticalScrollOffset + (mouseWheelEvent.wheelRotation * editor.lineHeight * 3))
     }
 
-    private fun getMapYFromEditorY(y: Int): Int {
-        val offset = editor.logicalPositionToOffset(editor.xyToLogicalPosition(Point(0, y)))
-
-        return coords.offsetToScreenSpace(offset)
-    }
-
     override fun paint(gfx: Graphics?) {
         val g = gfx as Graphics2D
-        val visibleArea = editor.scrollingModel.visibleArea
-        val firstVisibleLine = getMapYFromEditorY(visibleArea.minY.toInt())
-        val height = coords.linesToPixels(((visibleArea.maxY - visibleArea.minY) / editor.lineHeight).toInt())
 
-        // Draw the current viewport
-        g.color = viewportColor
+        g.color = visibleRectColor
         g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f)
-        g.fillRect(0, firstVisibleLine, width, height)
+        g.fillRect(0, scrollstate.viewportStart - scrollstate.visibleStart, width, scrollstate.viewportHeight)
     }
 }

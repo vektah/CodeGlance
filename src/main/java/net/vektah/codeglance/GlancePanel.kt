@@ -38,9 +38,7 @@ import com.intellij.ui.JBColor
 import net.vektah.codeglance.concurrent.DirtyLock
 import net.vektah.codeglance.config.Config
 import net.vektah.codeglance.config.ConfigService
-import net.vektah.codeglance.render.CoordinateHelper
-import net.vektah.codeglance.render.Minimap
-import net.vektah.codeglance.render.TaskRunner
+import net.vektah.codeglance.render.*
 
 import javax.swing.*
 import java.awt.*
@@ -54,14 +52,13 @@ import java.lang.ref.SoftReference
 class GlancePanel(private val project: Project, fileEditor: FileEditor, private val container: JPanel, private val runner: TaskRunner) : JPanel(), VisibleAreaListener {
     private val editor = (fileEditor as TextEditor).editor
     private var mapRef: SoftReference<Minimap>
-    private val logger = Logger.getInstance(javaClass.name)
-    private val coords = CoordinateHelper()
     private val configService = ServiceManager.getService(ConfigService::class.java)
     private var config: Config = configService.state!!
     private var lastFoldCount = -1
-    private var lastPanel: BufferedImage? = null
+    private var buf: BufferedImage? = null
     private val renderLock = DirtyLock()
-    private val scrollbar = Scrollbar(editor, coords)
+    private val scrollstate = ScrollState()
+    private val scrollbar = Scrollbar(editor, scrollstate)
 
     // Anonymous Listeners that should be cleaned up.
     private val componentListener: ComponentListener
@@ -72,7 +69,6 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         get() = config.disabled || editor.document.textLength > config.maxFileSize || editor.document.lineCount < config.minLineCount
 
     private val onConfigChange = {
-        readConfig()
         updateImage()
         updateSize()
         this@GlancePanel.revalidate()
@@ -83,6 +79,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         componentListener = object : ComponentAdapter() {
             override fun componentResized(componentEvent: ComponentEvent?) {
                 updateSize()
+                scrollstate.setVisibleHeight(height)
                 this@GlancePanel.revalidate()
                 this@GlancePanel.repaint()
             }
@@ -98,8 +95,6 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         configService.onChange(onConfigChange)
 
-        readConfig()
-
         editor.scrollingModel.addVisibleAreaListener(this)
 
         selectionListener = SelectionListener { repaint() }
@@ -114,11 +109,6 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         add(scrollbar)
     }
 
-    private fun readConfig() {
-        config = configService.state!!
-
-        coords.setPixelsPerLine(config.pixelsPerLine)
-    }
 
     /**
      * Adjusts the panels size to be a percentage of the total window
@@ -156,6 +146,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         runner.run {
             map.update(text, editor.colorsScheme, hl, folds)
+            scrollstate.setDocumentSize(config.width, map.height)
 
             renderLock.release()
 
@@ -170,90 +161,88 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
     private fun updateImageSoon() = SwingUtilities.invokeLater { updateImage() }
 
-    override fun paint(gfx: Graphics?) {
+    fun paintLast(gfx: Graphics?) {
         val g = gfx as Graphics2D
+
         g.color = editor.colorsScheme.defaultBackground
         g.fillRect(0, 0, width, height)
 
-        if (editor.document.textLength == 0) return
+        if (buf != null) {
+            g.drawImage(buf,
+                0, 0, buf!!.width, buf!!.height,
+                0, 0, buf!!.width, buf!!.height,
+                null)
+        }
+        paintSelection(g)
+        scrollbar.paint(gfx)
+    }
 
-        val documentEndY = editor.logicalPositionToXY(editor.offsetToLogicalPosition(editor.document.textLength - 1)).getY()
-        val visibleArea = editor.scrollingModel.visibleArea
-
-        coords.setPanelHeight(height)
-            .setPanelWidth(width)
-            .setPercentageComplete(visibleArea.minY / (documentEndY - (visibleArea.maxY - visibleArea.minY)))
-
-        val dest = coords.imageDestination
-
+    override fun paint(gfx: Graphics?) {
         if (renderLock.locked) {
-            if (lastPanel != null) {
-                g.drawImage(lastPanel,
-                        dest.x, dest.y, dest.width, dest.height,
-                        0, 0, lastPanel!!.width, lastPanel!!.height,
-                        null)
-            }
-            scrollbar.paint(gfx)
+            paintLast(gfx)
             return
         }
-
-        paintSelection(g)
 
         val minimap = mapRef.get()
         if (minimap == null) {
             updateImageSoon()
-            scrollbar.paint(gfx)
+            paintLast(gfx)
             return
         }
 
-        coords.setMinimap(minimap)
+        if (buf == null || buf?.width!! < width || buf?.height!! < height) {
+            buf = BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR)
+        }
 
-        val src = coords.imageSource
+        val g = buf!!.createGraphics()
 
-        // Draw the image and scale it to stretch vertically.
-        g.drawImage(
-            minimap.img, // source image
-            dest.x, dest.y, dest.width, dest.height,
-            src.x, src.y, src.width, src.height,
-            null
-        )
+        g.color = editor.colorsScheme.defaultBackground
+        g.fillRect(0, 0, width, height)
 
-        if (dest.height > 0 && dest.width > 0) {
-            lastPanel = BufferedImage(dest.width, dest.height, BufferedImage.TYPE_4BYTE_ABGR)
-            lastPanel!!.graphics.drawImage(
+        if (editor.document.textLength != 0) {
+            g.drawImage(
                 minimap.img,
-                dest.x, dest.y, dest.width, dest.height,
-                src.x, src.y, src.width, src.height,
+                0, 0, scrollstate.documentWidth, scrollstate.drawHeight,
+                0, scrollstate.visibleStart, scrollstate.documentWidth, scrollstate.visibleEnd,
                 null
             )
         }
+
+        (gfx as Graphics2D).drawImage(buf, 0, 0, null)
+        paintSelection(gfx)
         scrollbar.paint(gfx)
     }
 
     private fun paintSelection(g: Graphics2D) {
-        val selectionStartOffset = editor.selectionModel.selectionStart
-        val selectionEndOffset = editor.selectionModel.selectionEnd
-        val firstSelectedLine = coords.offsetToScreenSpace(selectionStartOffset)
-        val firstSelectedCharacter = coords.offsetToCharacterInLine(selectionStartOffset)
-        val lastSelectedLine = coords.offsetToScreenSpace(selectionEndOffset)
-        val lastSelectedCharacter = coords.offsetToCharacterInLine(selectionEndOffset)
+        val start = editor.offsetToVisualPosition(editor.selectionModel.selectionStart)
+        val end = editor.offsetToVisualPosition(editor.selectionModel.selectionEnd)
 
-        g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.90f)
+        val sX = start.column
+        val sY = (start.line + 1) * config.pixelsPerLine - scrollstate.visibleStart
+        val eX = end.column
+        val eY = (end.line + 1) * config.pixelsPerLine - scrollstate.visibleStart
+
+        g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.50f)
         g.color = editor.colorsScheme.getColor(ColorKey.createColorKey("SELECTION_BACKGROUND", JBColor.BLUE))
 
-        if (firstSelectedLine == lastSelectedLine) {
-            // Single line is easy
-            g.fillRect(firstSelectedCharacter, firstSelectedLine, lastSelectedCharacter - firstSelectedCharacter, config.pixelsPerLine)
+        // Single line is real easy
+        if (start.line == end.line) {
+            g.fillRect(
+                sX,
+                sY,
+                eX - sX,
+                config.pixelsPerLine
+            )
         } else {
             // Draw the line leading in
-            g.fillRect(firstSelectedCharacter, firstSelectedLine, width - firstSelectedCharacter, config.pixelsPerLine)
+            g.fillRect(sX, sY, width - sX, config.pixelsPerLine)
 
             // Then the line at the end
-            g.fillRect(0, lastSelectedLine, lastSelectedCharacter, config.pixelsPerLine)
+            g.fillRect(0, eY, eX, config.pixelsPerLine)
 
-            if (firstSelectedLine + 1 != lastSelectedLine) {
+            if (eY + config.pixelsPerLine != sY) {
                 // And if there is anything in between, fill it in
-                g.fillRect(0, firstSelectedLine + config.pixelsPerLine, width, lastSelectedLine - firstSelectedLine - config.pixelsPerLine)
+                g.fillRect(0, sY + config.pixelsPerLine, width, eY - sY - config.pixelsPerLine)
             }
         }
     }
@@ -266,6 +255,12 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
                 currentFoldCount++
             }
         }
+
+        val visibleArea = editor.scrollingModel.visibleArea
+        val start = scrollstate.documentHeight * visibleArea.y / editor.contentComponent.height
+        val end = scrollstate.documentHeight * visibleArea.height / editor.contentComponent.height
+
+        scrollstate.setViewportArea(start, end)
 
         if (currentFoldCount != lastFoldCount) {
             updateImage()

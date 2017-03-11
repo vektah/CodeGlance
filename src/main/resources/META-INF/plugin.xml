@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Vektah/CodeGlance">
 	<id>net.vektah.codeglance</id>
 	<name>CodeGlance</name>
-	<version>1.4.6</version>
+	<version>1.5.0</version>
 	<vendor email="adam@vektah.net" url="https://github.com/Vektah/CodeGlance">Vektah</vendor>
 
 	<description>
@@ -10,6 +10,14 @@
 	</description>
 
 	<change-notes><![CDATA[
+	    <h3>1.5.0</h3>
+		<ul>
+			<li>Complete overhaul of scrolling logic. Smoother, faster, more accurate</li>
+			<li>A cleaner look. Old renderer is available still in settings</li>
+			<li>Correctly renders multiple cursors</li>
+			<li>Fix a bug injecting into some custom editors</li>
+			<li>Don't automatically re-enable CodeGlance on boot</li>
+		</ul>
 		<h3>1.4.6</h3>
 		<ul>
 			<li>Add min and max documentWidth</li>

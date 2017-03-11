@@ -1,5 +1,6 @@
 buildscript {
     repositories {
+        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
         mavenCentral()
     }
     dependencies {
@@ -8,13 +9,13 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.1.10"
+    id "org.jetbrains.intellij" version "0.2.5"
 }
 
 allprojects {
     apply plugin: 'java'
     apply plugin: 'kotlin'
-    apply plugin: 'idea'
+    apply plugin: 'org.jetbrains.intellij'
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
     tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
@@ -44,4 +45,8 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     testCompile "org.testng:testng:6.8.5"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.3'
 }

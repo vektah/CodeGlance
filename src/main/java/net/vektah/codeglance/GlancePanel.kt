@@ -173,7 +173,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
                 0, 0, buf!!.width, buf!!.height,
                 null)
         }
-        paintSelection(g)
+        paintSelections(g)
         scrollbar.paint(gfx)
     }
 
@@ -209,13 +209,13 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         }
 
         (gfx as Graphics2D).drawImage(buf, 0, 0, null)
-        paintSelection(gfx)
+        paintSelections(gfx)
         scrollbar.paint(gfx)
     }
 
-    private fun paintSelection(g: Graphics2D) {
-        val start = editor.offsetToVisualPosition(editor.selectionModel.selectionStart)
-        val end = editor.offsetToVisualPosition(editor.selectionModel.selectionEnd)
+    private fun paintSelection(g: Graphics2D, startByte: Int, endByte: Int) {
+        val start = editor.offsetToVisualPosition(startByte)
+        val end = editor.offsetToVisualPosition(endByte)
 
         val sX = start.column
         val sY = (start.line + 1) * config.pixelsPerLine - scrollstate.visibleStart
@@ -244,6 +244,14 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
                 // And if there is anything in between, fill it in
                 g.fillRect(0, sY + config.pixelsPerLine, width, eY - sY - config.pixelsPerLine)
             }
+        }
+    }
+
+    private fun paintSelections(g: Graphics2D) {
+       paintSelection(g, editor.selectionModel.selectionStart, editor.selectionModel.selectionEnd)
+
+        for ((index, start) in editor.selectionModel.blockSelectionStarts.withIndex()) {
+            paintSelection(g, start, editor.selectionModel.blockSelectionEnds[index])
         }
     }
 

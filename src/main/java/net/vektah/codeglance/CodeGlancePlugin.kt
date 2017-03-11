@@ -1,11 +1,9 @@
 package net.vektah.codeglance
 
 import com.intellij.openapi.components.ProjectComponent
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
-import net.vektah.codeglance.config.ConfigService
 import net.vektah.codeglance.render.TaskRunner
 
 class CodeGlancePlugin(private val project: Project) : ProjectComponent {
@@ -19,7 +17,6 @@ class CodeGlancePlugin(private val project: Project) : ProjectComponent {
     }
 
     override fun initComponent() {
-        ServiceManager.getService(ConfigService::class.java).state!!.disabled = false
         runnerThread.start()
         project.messageBus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, injector)
         logger.debug("CodeGlance2 initialized")

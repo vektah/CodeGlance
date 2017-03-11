@@ -29,14 +29,6 @@ import org.testng.annotations.Test
 import org.testng.Assert.*
 
 class ScrollStateTest {
-
-//    @Test fun testEditorArea() {
-//        assertEquals(editorArea(RenderInfo(2200, 50, 4), 0, 50), Rectangle(0, 0, 50, 200))
-//        assertEquals(editorArea(RenderInfo(2200, 50, 2), 0, 50), Rectangle(0, 0, 50, 100))
-//        assertEquals(editorArea(RenderInfo(2200, 50, 2), 250, 300), Rectangle(0, 500, 50, 100))
-//        assertEquals(editorArea(RenderInfo(200, 50, 2), 100, 150), Rectangle(0, 200, 50, 0))
-//    }
-//
     @Test fun testVisibleAreaWhenEntireDocumentIsVisible() {
         val ss = ScrollState()
             .setDocumentSize(50, 100)

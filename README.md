@@ -1,4 +1,4 @@
-CodeGlance [![Build Status](https://travis-ci.org/Vektah/CodeGlance.png?branch=master)](https://travis-ci.org/Vektah/CodeGlance)
+CodeGlance [![CircleCI](https://circleci.com/gh/Vektah/CodeGlance/tree/master.svg?style=svg)](https://circleci.com/gh/Vektah/CodeGlance/tree/master)
 ==========
 
 Plugin Repository: http://plugins.jetbrains.com/plugin/7275  

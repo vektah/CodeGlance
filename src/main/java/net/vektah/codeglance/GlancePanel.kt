@@ -66,7 +66,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
     private val selectionListener: SelectionListener
 
     private val isDisabled: Boolean
-        get() = config.disabled || editor.document.textLength > config.maxFileSize || editor.document.lineCount < config.minLineCount
+        get() = config.disabled || editor.document.textLength > config.maxFileSize || editor.document.lineCount < config.minLineCount || container.width < config.minWindowWidth
 
     private val onConfigChange = {
         updateImage()

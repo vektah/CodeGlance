@@ -42,6 +42,7 @@ public class ConfigForm {
     private JTextField width;
     private JTextField viewportColor;
     private JTextField minLinesCount;
+    private JTextField minWindowWidth;
     private JComboBox renderStyle;
     private JComboBox alignment;
 
@@ -135,6 +136,18 @@ public class ConfigForm {
 
     public void setMinLinesCount(int minLinesCount) {
         this.minLinesCount.setText(Integer.toString(minLinesCount));
+    }
+
+    public int getMinWindowWidth() {
+        try {
+            return Integer.parseInt(minWindowWidth.getText());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    public void setMinWindowWidth(int minWindowWidth) {
+        this.minWindowWidth.setText(Integer.toString(minWindowWidth));
     }
 
     {

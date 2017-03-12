@@ -59,6 +59,7 @@ class ConfigEntry : Configurable {
             || config.width != form!!.width
             || config.viewportColor !== form!!.viewportColor
             || config.minLineCount != form!!.minLinesCount
+            || config.minWindowWidth != form!!.minWindowWidth
             || config.clean != form!!.cleanStyle)
             || config.isRightAligned != form!!.isRightAligned
 
@@ -79,6 +80,7 @@ class ConfigEntry : Configurable {
         }
 
         config.minLineCount = form!!.minLinesCount
+        config.minWindowWidth = form!!.minWindowWidth
         config.clean = form!!.cleanStyle
         config.isRightAligned = form!!.isRightAligned
         configService.notifyChange()
@@ -94,6 +96,7 @@ class ConfigEntry : Configurable {
         form!!.viewportColor = config.viewportColor
         form!!.width = config.width
         form!!.minLinesCount = config.minLineCount
+        form!!.minWindowWidth = config.minWindowWidth
         form!!.cleanStyle = config.clean
         form!!.isRightAligned = config.isRightAligned
     }

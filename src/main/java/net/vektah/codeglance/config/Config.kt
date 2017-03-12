@@ -36,4 +36,5 @@ class Config {
     var viewportColor: String = "A0A0A0"
     var clean: Boolean = true
     var isRightAligned: Boolean = true
+    var minWindowWidth: Int = 0
 }

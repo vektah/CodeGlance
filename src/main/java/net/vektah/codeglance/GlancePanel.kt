@@ -26,7 +26,6 @@
 package net.vektah.codeglance
 
 import com.intellij.openapi.components.ServiceManager
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.colors.ColorKey
 import com.intellij.openapi.editor.event.*
 import com.intellij.openapi.fileEditor.FileEditor
@@ -63,7 +62,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
     // Anonymous Listeners that should be cleaned up.
     private val componentListener: ComponentListener
     private val documentListener: DocumentListener
-    private val selectionListener: SelectionListener
+    private val selectionListener: SelectionListener = SelectionListener { repaint() }
 
     private val isDisabled: Boolean
         get() = config.disabled || editor.document.textLength > config.maxFileSize || editor.document.lineCount < config.minLineCount || container.width < config.minWindowWidth
@@ -97,7 +96,6 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         editor.scrollingModel.addVisibleAreaListener(this)
 
-        selectionListener = SelectionListener { repaint() }
         editor.selectionModel.addSelectionListener(selectionListener)
         updateSize()
         mapRef = SoftReference(Minimap(configService.state!!))
@@ -269,6 +267,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         val end = scrollstate.documentHeight * visibleArea.height / editor.contentComponent.height
 
         scrollstate.setViewportArea(start, end)
+        scrollstate.setVisibleHeight(height)
 
         if (currentFoldCount != lastFoldCount) {
             updateImage()

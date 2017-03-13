@@ -1,6 +1,7 @@
 package net.vektah.codeglance
 
 import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
 import net.vektah.codeglance.config.Config
 import net.vektah.codeglance.config.ConfigService

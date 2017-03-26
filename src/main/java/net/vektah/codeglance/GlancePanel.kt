@@ -50,7 +50,7 @@ import java.lang.ref.SoftReference
  */
 class GlancePanel(private val project: Project, fileEditor: FileEditor, private val container: JPanel, private val runner: TaskRunner) : JPanel(), VisibleAreaListener {
     private val editor = (fileEditor as TextEditor).editor
-    private var mapRef: SoftReference<Minimap>
+    private val mapRef: SoftReference<Minimap>
     private val configService = ServiceManager.getService(ConfigService::class.java)
     private var config: Config = configService.state!!
     private var lastFoldCount = -1
@@ -102,7 +102,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         updateImage()
 
-        isOpaque = true
+        isOpaque = false
         layout = BorderLayout()
         add(scrollbar)
     }
@@ -129,15 +129,10 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         val file = PsiDocumentManager.getInstance(project).getPsiFile(editor.document) ?: return
 
+        val map = mapRef.get() ?: return
         if (!renderLock.acquire()) return
 
         val hl = SyntaxHighlighterFactory.getSyntaxHighlighter(file.language, project, file.virtualFile)
-
-        var map = mapRef.get()
-        if (map == null) {
-            map = Minimap(configService.state!!)
-            mapRef = SoftReference<Minimap>(map)
-        }
 
         val text = editor.document.text
         val folds = Folds(editor.foldingModel.allFoldRegions)
@@ -162,8 +157,9 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
     fun paintLast(gfx: Graphics?) {
         val g = gfx as Graphics2D
 
-        g.color = editor.colorsScheme.defaultBackground
+        g.composite = AlphaComposite.getInstance(AlphaComposite.CLEAR)
         g.fillRect(0, 0, width, height)
+        g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER)
 
         if (buf != null) {
             g.drawImage(buf,
@@ -194,8 +190,9 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         val g = buf!!.createGraphics()
 
-        g.color = editor.colorsScheme.defaultBackground
+        g.composite = AlphaComposite.getInstance(AlphaComposite.CLEAR)
         g.fillRect(0, 0, width, height)
+        g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER)
 
         if (editor.document.textLength != 0) {
             g.drawImage(
@@ -206,8 +203,8 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
             )
         }
 
-        (gfx as Graphics2D).drawImage(buf, 0, 0, null)
-        paintSelections(gfx)
+        paintSelections(gfx as Graphics2D)
+        gfx.drawImage(buf, 0, 0, null)
         scrollbar.paint(gfx)
     }
 
@@ -220,7 +217,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         val eX = end.column
         val eY = (end.line + 1) * config.pixelsPerLine - scrollstate.visibleStart
 
-        g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.50f)
+        g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.80f)
         g.color = editor.colorsScheme.getColor(ColorKey.createColorKey("SELECTION_BACKGROUND", JBColor.BLUE))
 
         // Single line is real easy

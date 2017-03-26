@@ -13,11 +13,7 @@ Intelij plugin that displays a zoomed out overview or minimap similar to the one
  - Embedded into editor window
  - Complete replacement for Code Outline that supports new Intellij builds.
 
-Dark:
-![Dracula](https://raw.github.com/Vektah/CodeGlance/master/pub/dark.png)
-
-Light:
-![Default](https://raw.github.com/Vektah/CodeGlance/master/pub/light.png)
+![Dracula](https://raw.github.com/Vektah/CodeGlance/master/pub/example.png)
 
 
 Building using gradle

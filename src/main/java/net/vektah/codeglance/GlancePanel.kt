@@ -50,7 +50,7 @@ import java.lang.ref.SoftReference
  */
 class GlancePanel(private val project: Project, fileEditor: FileEditor, private val container: JPanel, private val runner: TaskRunner) : JPanel(), VisibleAreaListener {
     private val editor = (fileEditor as TextEditor).editor
-    private val mapRef: SoftReference<Minimap>
+    private var mapRef = SoftReference<Minimap>(null)
     private val configService = ServiceManager.getService(ConfigService::class.java)
     private var config: Config = configService.state!!
     private var lastFoldCount = -1
@@ -98,8 +98,6 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         editor.selectionModel.addSelectionListener(selectionListener)
         updateSize()
-        mapRef = SoftReference(Minimap(configService.state!!))
-
         updateImage()
 
         isOpaque = false
@@ -120,6 +118,19 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         }
     }
 
+    // the minimap is held by a soft reference so the GC can delete it at any time.
+    // if its been deleted and we want it again (active tab) we recreate it.
+    private fun getOrCreateMap() : Minimap? {
+        var map = mapRef.get()
+
+        if (map == null) {
+            map = Minimap(configService.state!!)
+            mapRef = SoftReference<Minimap>(map)
+        }
+
+        return map
+    }
+
     /**
      * Fires off a new task to the worker thread. This should only be called from the ui thread.
      */
@@ -129,7 +140,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
 
         val file = PsiDocumentManager.getInstance(project).getPsiFile(editor.document) ?: return
 
-        val map = mapRef.get() ?: return
+        val map = getOrCreateMap() ?: return
         if (!renderLock.acquire()) return
 
         val hl = SyntaxHighlighterFactory.getSyntaxHighlighter(file.language, project, file.virtualFile)
@@ -157,9 +168,6 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
     fun paintLast(gfx: Graphics?) {
         val g = gfx as Graphics2D
 
-        g.composite = AlphaComposite.getInstance(AlphaComposite.CLEAR)
-        g.fillRect(0, 0, width, height)
-        g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER)
 
         if (buf != null) {
             g.drawImage(buf,

@@ -54,6 +54,7 @@ class ConfigEntry : Configurable {
     override fun isModified() = form != null &&
             (config.pixelsPerLine != form!!.pixelsPerLine
             || config.disabled != form!!.isDisabled
+            || config.locked != form!!.isLocked
             || config.jumpOnMouseDown != form!!.jumpOnMouseDown()
             || config.percentageBasedClick != form!!.percentageBasedClick()
             || config.width != form!!.width
@@ -69,6 +70,7 @@ class ConfigEntry : Configurable {
 
         config.pixelsPerLine = form!!.pixelsPerLine
         config.disabled = form!!.isDisabled
+        config.locked = form!!.isLocked
         config.jumpOnMouseDown = form!!.jumpOnMouseDown()
         config.percentageBasedClick = form!!.percentageBasedClick()
         config.width = form!!.width
@@ -91,6 +93,7 @@ class ConfigEntry : Configurable {
 
         form!!.pixelsPerLine = config.pixelsPerLine
         form!!.isDisabled = config.disabled
+        form!!.isLocked= config.locked
         form!!.setJumpOnMouseDown(config.jumpOnMouseDown)
         form!!.setPercentageBasedClick(config.percentageBasedClick)
         form!!.viewportColor = config.viewportColor

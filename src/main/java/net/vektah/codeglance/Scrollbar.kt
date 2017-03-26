@@ -26,6 +26,9 @@ class Scrollbar(val editor: Editor, val scrollstate : ScrollState) : JPanel(), M
     override fun mouseExited(e: MouseEvent?) {}
 
     private fun isInReizeGutter(x: Int): Boolean {
+        if (config.locked) {
+            return false
+        }
         if (config.isRightAligned) {
             return x >= 0 && x < 8
         } else {

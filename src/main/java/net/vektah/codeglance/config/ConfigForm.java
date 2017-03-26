@@ -45,6 +45,7 @@ public class ConfigForm {
     private JTextField minWindowWidth;
     private JComboBox renderStyle;
     private JComboBox alignment;
+    private JCheckBox locked;
 
     public ConfigForm() {
         pixelsPerLine.setModel(new DefaultComboBoxModel(new Integer[]{1, 2, 3, 4}));
@@ -72,6 +73,14 @@ public class ConfigForm {
 
     public void setDisabled(boolean isDisabled) {
         disabled.getModel().setSelected(isDisabled);
+    }
+
+    public boolean isLocked() {
+        return locked.getModel().isSelected();
+    }
+
+    public void setLocked(boolean isLocked) {
+        locked.getModel().setSelected(isLocked);
     }
 
     public boolean jumpOnMouseDown() {
@@ -166,7 +175,7 @@ public class ConfigForm {
      */
     private void $$$setupUI$$$() {
         rootPanel = new JPanel();
-        rootPanel.setLayout(new GridLayoutManager(11, 3, new Insets(0, 0, 0, 0), -1, -1));
+        rootPanel.setLayout(new GridLayoutManager(11, 4, new Insets(0, 0, 0, 0), -1, -1));
         final JLabel label1 = new JLabel();
         label1.setText("Pixels Per Line:");
         label1.setDisplayedMnemonic('P');
@@ -181,7 +190,7 @@ public class ConfigForm {
         pixelsPerLine.setModel(defaultComboBoxModel1);
         rootPanel.add(pixelsPerLine, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(200, 24), null, 0, false));
         final Spacer spacer1 = new Spacer();
-        rootPanel.add(spacer1, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        rootPanel.add(spacer1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JLabel label2 = new JLabel();
         label2.setText("Jump to position on:");
         rootPanel.add(label2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -248,6 +257,9 @@ public class ConfigForm {
         rootPanel.add(label10, new GridConstraints(7, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         minWindowWidth = new JTextField();
         rootPanel.add(minWindowWidth, new GridConstraints(7, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        locked = new JCheckBox();
+        locked.setText("lock");
+        rootPanel.add(locked, new GridConstraints(4, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         label1.setLabelFor(pixelsPerLine);
     }
 

@@ -37,4 +37,5 @@ class Config {
     var clean: Boolean = true
     var isRightAligned: Boolean = true
     var minWindowWidth: Int = 0
+    var locked: Boolean = false
 }

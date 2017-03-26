@@ -51,7 +51,7 @@ class Minimap(private val config: Config) {
      * Because java chars are UTF-8 16 bit chars this function should be UTF safe in the 2 byte range, which is all intellij
      * seems to handle anyway....
      */
-    fun updateDimensions(text: CharSequence, folding: Array<FoldRegion>) {
+    fun updateDimensions(text: CharSequence, folds: Folds) {
         var line_length = 0    // The current line length
         var longest_line = 1   // The longest line in the document
         var lines = 1          // The total number of lines in the document
@@ -65,7 +65,7 @@ class Minimap(private val config: Config) {
         var i = 0
         val len = text.length
         while (i < len) {
-            if (isFolded(i, folding)) {
+            if (folds.isFolded(i)) {
                 i++
                 continue
             }
@@ -101,21 +101,6 @@ class Minimap(private val config: Config) {
             img = BufferedImage(config.width, height + 100 * config.pixelsPerLine, BufferedImage.TYPE_4BYTE_ABGR)
             logger.debug("Created new image")
         }
-    }
-
-    /**
-     * @return the offset that a line starts at within the file.
-     */
-    fun getOffsetForLine(line: Int): Int {
-        if (line < 1) {
-            return line_endings!![1]
-        }
-
-        if (line >= line_endings!!.size) {
-            return line_endings!![line_endings!!.size - 1]
-        }
-
-        return line_endings!![line]
     }
 
     /**
@@ -188,18 +173,6 @@ class Minimap(private val config: Config) {
     }
 
     /**
-     * Checks if a given position is within a folded region
-     * @param position  the offset from the start of file in chars
-     * *
-     * @param regions   the array of regions to check against
-     * *
-     * @return true if the given position is folded.
-     */
-    private fun isFolded(position: Int, regions: Array<FoldRegion>): Boolean {
-        return regions.any { !it.isExpanded && it.startOffset < position && position < it.endOffset }
-    }
-
-    /**
      * Internal worker function to update the minimap image
 
      * @param text          The entire text of the document to render
@@ -208,9 +181,9 @@ class Minimap(private val config: Config) {
      * *
      * @param hl            The syntax highlighter to use for the language this document is in.
      */
-    fun update(text: CharSequence, colorScheme: EditorColorsScheme, hl: SyntaxHighlighter, folding: Array<FoldRegion>) {
+    fun update(text: CharSequence, colorScheme: EditorColorsScheme, hl: SyntaxHighlighter, folds: Folds) {
         logger.debug("Updating file image.")
-        updateDimensions(text, folding)
+        updateDimensions(text, folds)
 
         var color: Int
         var ch: Char
@@ -238,7 +211,7 @@ class Minimap(private val config: Config) {
             x = 0
             for (i in startLine.begin..start - 1) {
                 // Dont count lines inside of folded regions.
-                if (isFolded(i, folding)) {
+                if (folds.isFolded(i)) {
                     continue
                 }
 
@@ -255,7 +228,7 @@ class Minimap(private val config: Config) {
             // Render whole token, make sure multi lines are handled gracefully.
             for (i in start..lexer.tokenEnd - 1) {
                 // Don't render folds.
-                if (isFolded(i, folding)) continue
+                if (folds.isFolded(i)) continue
                 // Watch out for tokens that extend past the document... bad plugins? see issue #138
                 if (i >= text.length) return
 

@@ -44,31 +44,31 @@ class GlanceImageTest {
     }
 
     @Test(dataProvider = "Test-Dimensions") fun test_calculate_dimensions(string: CharSequence, height: Int) {
-        img!!.updateDimensions(string, arrayOf<FoldRegion>())
+        img!!.updateDimensions(string, Folds())
         assertEquals(height, img!!.height)
     }
 
     @Test fun test_calculate_dimensions_resize() {
-        img!!.updateDimensions("ASDF\nHJKL", arrayOf<FoldRegion>())
+        img!!.updateDimensions("ASDF\nHJKL", Folds())
 
         assertEquals(config.width, img!!.img!!.width)
         assertEquals(206, img!!.img!!.height)
 
         // Only added a little, so image should not get regenerated.
-        img!!.updateDimensions("asdfjkl;asdfjkl;\nasdfjlkasdfjkl\nasdfjkl;a;sdfjkl", arrayOf<FoldRegion>())
+        img!!.updateDimensions("asdfjkl;asdfjkl;\nasdfjlkasdfjkl\nasdfjkl;a;sdfjkl", Folds())
 
         assertEquals(config.width, img!!.img!!.width)
         assertEquals(206, img!!.img!!.height)
 
         // Went over the existing image boundary so a new one should be created.
-        img!!.updateDimensions(StringUtil.repeat("\na", 152), arrayOf<FoldRegion>())
+        img!!.updateDimensions(StringUtil.repeat("\na", 152), Folds())
 
         assertEquals(config.width, img!!.img!!.width)
         assertEquals(508, img!!.img!!.height)
     }
 
     @Test(dataProvider = "Test-Newlines") fun test_newline_search(input: CharSequence, i: Int, expected_number: Int, expected_begin: Int, expected_end: Int) {
-        img!!.updateDimensions(input, arrayOf<FoldRegion>())
+        img!!.updateDimensions(input, Folds())
 
         val line = img!!.getLine(i)
 

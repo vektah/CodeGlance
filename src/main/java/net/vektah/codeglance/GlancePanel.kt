@@ -140,7 +140,7 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         }
 
         val text = editor.document.text
-        val folds = editor.foldingModel.allFoldRegions.clone()
+        val folds = Folds(editor.foldingModel.allFoldRegions)
 
         runner.run {
             map.update(text, editor.colorsScheme, hl, folds)

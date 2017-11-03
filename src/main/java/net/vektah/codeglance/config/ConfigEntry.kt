@@ -61,8 +61,8 @@ class ConfigEntry : Configurable {
             || config.viewportColor !== form!!.viewportColor
             || config.minLineCount != form!!.minLinesCount
             || config.minWindowWidth != form!!.minWindowWidth
-            || config.clean != form!!.cleanStyle)
-            || config.isRightAligned != form!!.isRightAligned
+            || config.clean != form!!.cleanStyle
+            || config.isRightAligned != form!!.isRightAligned)
 
     @Throws(ConfigurationException::class)
     override fun apply() {
@@ -100,8 +100,8 @@ class ConfigEntry : Configurable {
         form!!.width = config.width
         form!!.minLinesCount = config.minLineCount
         form!!.minWindowWidth = config.minWindowWidth
-        form!!.cleanStyle = config.clean
-        form!!.isRightAligned = config.isRightAligned
+        form!!.setCleanStyle(config.clean)
+        form!!.setRightAligned(config.isRightAligned)
     }
 
     override fun disposeUIResources() {

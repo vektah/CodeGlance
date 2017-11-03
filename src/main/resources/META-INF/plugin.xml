@@ -10,6 +10,10 @@
 	</description>
 
 	<change-notes><![CDATA[
+	    <h3>1.5.3</h3>
+		<ul>
+		    <li>Bugfix: Queue full</li>
+		</ul>
 		<h3>1.5.2</h3>
 		<ul>
 		    <li>Add support for transparent backgrounds</li>

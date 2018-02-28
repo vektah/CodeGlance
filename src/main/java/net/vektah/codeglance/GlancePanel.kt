@@ -268,10 +268,9 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         }
 
         val visibleArea = editor.scrollingModel.visibleArea
-        val start = scrollstate.documentHeight * visibleArea.y / editor.contentComponent.height
-        val end = scrollstate.documentHeight * visibleArea.height / editor.contentComponent.height
+        val factor = scrollstate.documentHeight.toDouble() / editor.contentComponent.height
 
-        scrollstate.setViewportArea(start, end)
+        scrollstate.setViewportArea((factor * visibleArea.y).toInt(), (factor * visibleArea.height).toInt())
         scrollstate.setVisibleHeight(height)
 
         if (currentFoldCount != lastFoldCount) {

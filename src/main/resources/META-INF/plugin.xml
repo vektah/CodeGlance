@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Vektah/CodeGlance">
 	<id>net.vektah.codeglance</id>
 	<name>CodeGlance</name>
-	<version>1.5.1</version>
+	<version>1.5.4</version>
 	<vendor email="adam@vektah.net" url="https://github.com/Vektah/CodeGlance">Vektah</vendor>
 
 	<description>
@@ -10,24 +10,27 @@
 	</description>
 
 	<change-notes><![CDATA[
-	    <h3>1.5.3</h3>
+		<h3>1.5.4</h3>
 		<ul>
-			<li>Bugfix: Viewport position now calculates correctly for large files</li>
-		    <li>Bugfix: Render style and alignment now save correctly</li>
-		    <li>Bugfix: Queue full</li>
+			<li>Bugfix: Viewport position now calculates correctly for large files -@ru5k</li>
+		</ul>
+		<h3>1.5.3</h3>
+		<ul>
+			<li>Bugfix: Render style and alignment now save correctly</li>
+			<li>Bugfix: Queue full</li>
 		</ul>
 		<h3>1.5.2</h3>
 		<ul>
-		    <li>Add support for transparent backgrounds</li>
+			<li>Add support for transparent backgrounds</li>
 			<li>Add an option to lock the width</li>
 			<li>Bugfix: Assertion error</li>
 		</ul>
-	    <h3>1.5.1</h3>
+		<h3>1.5.1</h3>
 		<ul>
 			<li>Fix a bug that causes the minimap not to render</li>
 			<li>Added a min editor width to automatically disable codeglance. Thanks github.com/bukajsytlos</li>
 		</ul>
-	    <h3>1.5.0</h3>
+		<h3>1.5.0</h3>
 		<ul>
 			<li>Complete overhaul of scrolling logic. Smoother, faster, more accurate</li>
 			<li>A cleaner look. Old renderer is available still in settings</li>
@@ -60,7 +63,7 @@
 		<ul>
 			<li>Bugfix: Disable retina scaling. This should fix some of the current retina issues.</li>
 		</ul>
-	    <h3>1.4.1</h3>
+		<h3>1.4.1</h3>
 		<ul>
 			<li>Bugfix: NPE in getLine</li>
 			<li>Bugfix: Increase render queue to 1000 requests</li>

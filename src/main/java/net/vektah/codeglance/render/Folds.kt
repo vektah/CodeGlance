@@ -29,25 +29,27 @@ import com.intellij.openapi.editor.FoldRegion
 
 // Is a copy of Array<FoldRegion> that only contains folded folds and can be passed safely to another thread
 class Folds{
-    val folds: IntArray
+    private val starts: IntArray
+    private val ends: IntArray
 
     constructor(allFolds: Array<FoldRegion>) {
         val numFolds = allFolds.count { !it.isExpanded }
 
-        folds = IntArray(numFolds*2)
+        starts = IntArray(numFolds)
+        ends = IntArray(numFolds)
 
-        var i = 0
-        allFolds.forEach {
-            if (!it.isExpanded) {
-                folds[i++] = it.startOffset
-                folds[i++] = it.endOffset
+        allFolds
+            .filterNot { it.isExpanded }
+            .forEachIndexed { index, foldRegion ->
+                starts[index] = foldRegion.startOffset
+                ends[index] = foldRegion.endOffset
             }
-        }
     }
 
     // Used by tests that want an empty fold set
     constructor() {
-        folds = intArrayOf()
+        starts = intArrayOf()
+        ends = intArrayOf()
     }
 
     /**
@@ -57,12 +59,7 @@ class Folds{
      * @return true if the given position is folded.
      */
     fun isFolded(position: Int): Boolean {
-        for (i in 0..folds.size - 1 step 2) {
-            if (folds[i] <= position && position < folds[i+1]) {
-                return true
-            }
-        }
-
-        return false
+        val index = starts.binarySearch(position)
+        return (0 <= index || (index != -1 && position < ends[-(index+1)-1])) // see binarySearch() docs
     }
 }

@@ -29,27 +29,26 @@ import com.intellij.openapi.editor.FoldRegion
 
 // Is a copy of Array<FoldRegion> that only contains folded folds and can be passed safely to another thread
 class Folds{
-    private val starts: IntArray
-    private val ends: IntArray
+    private val starts: ArrayList<Int>
+    private val ends: ArrayList<Int>
 
     constructor(allFolds: Array<FoldRegion>) {
-        val numFolds = allFolds.count { !it.isExpanded }
-
-        starts = IntArray(numFolds)
-        ends = IntArray(numFolds)
-
+        starts = ArrayList()
+        ends = ArrayList()
         allFolds
             .filterNot { it.isExpanded }
-            .forEachIndexed { index, foldRegion ->
-                starts[index] = foldRegion.startOffset
-                ends[index] = foldRegion.endOffset
+            .forEach { foldRegion ->
+                if (ends.size == 0 || ends.last() < foldRegion.startOffset) {
+                    starts.add(foldRegion.startOffset)
+                    ends.add(foldRegion.endOffset)
+                }
             }
     }
 
     // Used by tests that want an empty fold set
     constructor() {
-        starts = intArrayOf()
-        ends = intArrayOf()
+        starts = ArrayList()
+        ends = ArrayList()
     }
 
     /**

@@ -71,6 +71,7 @@ class FoldsTest {
         assertTrue(folds.isFolded(13))
         assertTrue(folds.isFolded(14))
         assertTrue(folds.isFolded(18))
+        assertFalse(folds.isFolded(20))
         assertFalse(folds.isFolded(25))
     }
 }

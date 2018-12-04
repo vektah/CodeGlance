@@ -44,3 +44,9 @@ Running from source in Intellj
 6. In order to run tests you will need to find mockito and testng jars. I usually do this with gradle.
 7. In module settings set the path to META-INF to src/main/resources
 8. Hit Run.
+
+
+Show/Hide or Enable/Disable Minimap
+===================
+* **Ctrl-Shift-G** to toggle minimap.
+* Settings > Other Settings > CodeGlance

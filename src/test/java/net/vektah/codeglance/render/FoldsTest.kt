@@ -57,4 +57,21 @@ class FoldsTest {
         assertFalse(folds.isFolded(15))
         assertFalse(folds.isFolded(25))
     }
+
+    @Test fun testNestedFoldedRegions() {
+        val folds = Folds(arrayOf(
+            FakeFold(10, 20, true),
+            FakeFold(12, 16, true),
+            FakeFold(14, 15, true),
+            FakeFold(18, 19, true)
+        ))
+
+        assertFalse(folds.isFolded(0))
+        assertTrue(folds.isFolded(11))
+        assertTrue(folds.isFolded(13))
+        assertTrue(folds.isFolded(14))
+        assertTrue(folds.isFolded(18))
+        assertFalse(folds.isFolded(20))
+        assertFalse(folds.isFolded(25))
+    }
 }

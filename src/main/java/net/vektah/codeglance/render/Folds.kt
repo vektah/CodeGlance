@@ -26,6 +26,7 @@
 package net.vektah.codeglance.render
 
 import com.intellij.openapi.editor.FoldRegion
+import java.util.*
 
 // Is a copy of Array<FoldRegion> that only contains folded folds and can be passed safely to another thread
 class Folds{

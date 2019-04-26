@@ -120,7 +120,7 @@ public class ConfigForm {
     }
 
     public void setRightAligned(boolean isRightAligned) {
-        renderStyle.setSelectedIndex(isRightAligned ? 0 : 1);
+        alignment.setSelectedIndex(isRightAligned ? 0 : 1);
     }
 
     public int getWidth() {

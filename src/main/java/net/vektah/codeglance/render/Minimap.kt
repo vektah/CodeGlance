@@ -82,7 +82,6 @@ class Minimap(private val config: Config) {
             } else {
                 line_length++
             }
-
             last = ch
             i++
         }

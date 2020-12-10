@@ -3,6 +3,7 @@ package net.vektah.codeglance
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.*
+import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBSplitter
@@ -51,6 +52,7 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
         }
 
         try {
+
             val outerPanel = editor.component as JPanel
             val outerLayout = outerPanel.layout as BorderLayout
             var layoutComponent = outerLayout.getLayoutComponent(BorderLayout.CENTER)
@@ -58,6 +60,7 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
             if (layoutComponent is JBSplitter) {
                 // editor is inside firstComponent of a JBSplitter
                 val editorComp = layoutComponent.firstComponent as JPanel
+
                 layoutComponent = (editorComp.layout as BorderLayout).getLayoutComponent(BorderLayout.CENTER)
             }
 

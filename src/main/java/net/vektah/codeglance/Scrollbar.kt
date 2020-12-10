@@ -3,6 +3,7 @@ package net.vektah.codeglance
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
+import javafx.scene.shape.Shape
 import net.vektah.codeglance.config.Config
 import net.vektah.codeglance.config.ConfigService
 import net.vektah.codeglance.render.ScrollState
@@ -21,7 +22,11 @@ class Scrollbar(val editor: Editor, val scrollstate : ScrollState) : JPanel(), M
     private val configService = ServiceManager.getService(ConfigService::class.java)
     private var config: Config = configService.state!!
     private var visibleRectColor: Color = Color.decode("#" + config.viewportColor)
-
+    private var bgColor: Color = Color.decode("#" + config.bgColor)
+    private var dividerColor: Color = Color.decode("#" + config.dividerColor)
+    private var bgColorEnabled = config.bgColorEnabled
+    private var dividerColorEnabled = config.dividerColorEnabled
+    private var rightAligned = config.isRightAligned
     override fun mouseEntered(e: MouseEvent?) {}
     override fun mouseExited(e: MouseEvent?) {}
 
@@ -119,9 +124,18 @@ class Scrollbar(val editor: Editor, val scrollstate : ScrollState) : JPanel(), M
 
     override fun paint(gfx: Graphics?) {
         val g = gfx as Graphics2D
+        val g2 = gfx
+        val g3 = gfx
 
         g.color = visibleRectColor
         g.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f)
         g.fillRect(0, scrollstate.viewportStart - scrollstate.visibleStart, width, scrollstate.viewportHeight)
+        if(dividerColorEnabled) {
+            g2.color = dividerColor
+            if(rightAligned)g2.fillRect(0,0,1,height)
+            if(!rightAligned)g2.fillRect(width - 1, 0,1,height)
+        }
+        g3.color = bgColor
+        if(bgColorEnabled)g3.fillRect(0, 0,width, height)
     }
 }

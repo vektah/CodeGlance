@@ -37,7 +37,8 @@ class ConfigEntry : Configurable {
     private val configService = ServiceManager.getService(ConfigService::class.java)
     private val config = configService.state!!
 
-    @Nls override fun getDisplayName(): String {
+    @Nls
+    override fun getDisplayName(): String {
         return "CodeGlance"
     }
 
@@ -52,13 +53,17 @@ class ConfigEntry : Configurable {
     }
 
     override fun isModified() = form != null &&
-            (config.pixelsPerLine != form!!.pixelsPerLine
+        (config.pixelsPerLine != form!!.pixelsPerLine
             || config.disabled != form!!.isDisabled
             || config.locked != form!!.isLocked
             || config.jumpOnMouseDown != form!!.jumpOnMouseDown()
             || config.percentageBasedClick != form!!.percentageBasedClick()
             || config.width != form!!.width
             || config.viewportColor !== form!!.viewportColor
+            || config.bgColor !== form!!.bgColor
+            || config.bgColorEnabled != form!!.bgColorEnabled
+            || config.dividerColor !== form!!.dividerColor
+            || config.dividerColorEnabled != form!!.dividerColorEnabled
             || config.minLineCount != form!!.minLinesCount
             || config.minWindowWidth != form!!.minWindowWidth
             || config.clean != form!!.cleanStyle
@@ -80,7 +85,19 @@ class ConfigEntry : Configurable {
         } else {
             config.viewportColor = "A0A0A0"
         }
+        if (form!!.bgColor.length == 6 && form!!.bgColor.matches("^[a-fA-F0-9]*$".toRegex())) {
+            config.bgColor = form!!.bgColor
+        } else {
+            config.bgColor = "303030"
+        }
+        if (form!!.dividerColor.length == 6 && form!!.dividerColor.matches("^[a-fA-F0-9]*$".toRegex())) {
+            config.dividerColor = form!!.dividerColor
+        } else {
+            config.dividerColor = "FFFFFF"
+        }
 
+        config.bgColorEnabled = form!!.bgColorEnabled
+        config.dividerColorEnabled = form!!.dividerColorEnabled
         config.minLineCount = form!!.minLinesCount
         config.minWindowWidth = form!!.minWindowWidth
         config.clean = form!!.cleanStyle
@@ -93,10 +110,14 @@ class ConfigEntry : Configurable {
 
         form!!.pixelsPerLine = config.pixelsPerLine
         form!!.isDisabled = config.disabled
-        form!!.isLocked= config.locked
+        form!!.isLocked = config.locked
         form!!.setJumpOnMouseDown(config.jumpOnMouseDown)
         form!!.setPercentageBasedClick(config.percentageBasedClick)
         form!!.viewportColor = config.viewportColor
+        form!!.bgColor = config.bgColor
+        form!!.bgColorEnabled = config.bgColorEnabled
+        form!!.dividerColor = config.dividerColor
+        form!!.dividerColorEnabled = config.dividerColorEnabled
         form!!.width = config.width
         form!!.minLinesCount = config.minLineCount
         form!!.minWindowWidth = config.minWindowWidth

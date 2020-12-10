@@ -46,6 +46,10 @@ public class ConfigForm {
     private JComboBox renderStyle;
     private JComboBox alignment;
     private JCheckBox locked;
+    private JCheckBox bgColorEnabled;
+    private JTextField bgColor;
+    private JTextField dividerColor;
+    private JCheckBox dividerColorEnabled;
 
     public ConfigForm() {
         pixelsPerLine.setModel(new DefaultComboBoxModel(new Integer[]{1, 2, 3, 4}));
@@ -105,6 +109,30 @@ public class ConfigForm {
 
     public void setViewportColor(String color) {
         viewportColor.setText(color);
+    }
+
+    public String getBgColor() { return bgColor.getText();}
+
+    public void setBgColor(String color) {bgColor.setText(color);}
+
+    public boolean getBgColorEnabled(){
+        return bgColorEnabled.getModel().isSelected();
+    }
+
+    public void setBgColorEnabled(boolean b) {
+        bgColorEnabled.getModel().setSelected(b);
+    }
+
+    public String getDividerColor() { return dividerColor.getText();}
+
+    public void setDividerColor(String color) {dividerColor.setText(color);}
+
+    public boolean getDividerColorEnabled(){
+        return dividerColorEnabled.getModel().isSelected();
+    }
+
+    public void setDividerColorEnabled(boolean b) {
+        dividerColorEnabled.getModel().setSelected(b);
     }
 
     public boolean getCleanStyle() {

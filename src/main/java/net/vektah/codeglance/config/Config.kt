@@ -34,6 +34,10 @@ class Config {
     var percentageBasedClick: Boolean = false
     var width: Int = 110
     var viewportColor: String = "A0A0A0"
+    var bgColor: String = "303030"
+    var bgColorEnabled: Boolean = false
+    var dividerColor: String = "FFFFFF"
+    var dividerColorEnabled: Boolean = true
     var clean: Boolean = true
     var isRightAligned: Boolean = true
     var minWindowWidth: Int = 0

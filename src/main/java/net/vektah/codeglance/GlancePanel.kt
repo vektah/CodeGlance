@@ -97,10 +97,11 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         editor.scrollingModel.addVisibleAreaListener(this)
 
         editor.selectionModel.addSelectionListener(selectionListener)
+
         updateSize()
         updateImage()
-
         isOpaque = false
+
         layout = BorderLayout()
         add(scrollbar)
     }

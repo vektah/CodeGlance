@@ -1,3 +1,5 @@
+# Defference with main repo 1.5.4 - Added new features - can now set background color and divider.
+
 CodeGlance [![CircleCI](https://circleci.com/gh/Vektah/CodeGlance/tree/master.svg?style=svg)](https://circleci.com/gh/Vektah/CodeGlance/tree/master)
 ==========
 

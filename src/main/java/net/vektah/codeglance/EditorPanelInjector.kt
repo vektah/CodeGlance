@@ -85,6 +85,7 @@ class EditorPanelInjector(private val project: Project, private val runner: Task
             val glancePanel = GlancePanel(project, editor, panel, runner)
             panel.add(glancePanel, where)
             panels.put(editor, glancePanel)
+            glancePanel.updateImage()
         }
     }
 

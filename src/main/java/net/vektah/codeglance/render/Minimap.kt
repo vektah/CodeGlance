@@ -25,9 +25,11 @@
 
 package net.vektah.codeglance.render
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.editor.FoldRegion
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.colors.EditorColorsScheme
+import com.intellij.openapi.editor.ex.EditorSettingsExternalizable
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.psi.tree.IElementType
 import net.vektah.codeglance.config.Config
@@ -39,7 +41,7 @@ import java.util.ArrayList
 /**
  * A rendered minimap of a document
  */
-class Minimap(private val config: Config) {
+class Minimap(private val config: Config, private val editor: Editor) {
     var img: BufferedImage? = null
     var height: Int = 0
     private val logger = Logger.getInstance(javaClass)
@@ -91,6 +93,14 @@ class Minimap(private val config: Config) {
 
         this.line_endings = line_endings
         height = (lines + 1) * config.pixelsPerLine
+
+        if (EditorSettingsExternalizable.getInstance().isAdditionalPageAtBottom) {
+            ApplicationManager.getApplication().runReadAction {
+                val editorHeight = editor.component.height
+                val linesOnScreen = editorHeight / editor.lineHeight
+                height += linesOnScreen * config.pixelsPerLine
+            }
+        }
 
         // If the image is too small to represent the entire document now then regenerate it
         // TODO: Copy old image when incremental update is added.

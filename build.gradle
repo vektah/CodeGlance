@@ -9,7 +9,7 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "1.0"
+    id "org.jetbrains.intellij" version "0.6.5"
 }
 
 intellij {
@@ -58,3 +58,5 @@ dependencies {
 wrapper {
     gradleVersion = '7.0.2'
 }
+
+

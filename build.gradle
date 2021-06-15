@@ -59,4 +59,7 @@ wrapper {
     gradleVersion = '7.0.2'
 }
 
+runIde {
+    jvmArgs '-DmyProperty=value'
+}
 

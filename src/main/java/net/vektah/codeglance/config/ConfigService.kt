@@ -7,7 +7,7 @@ import java.lang.ref.WeakReference
 @State(
         name = "CodeGlance",
         storages = arrayOf(
-            Storage(id = "other", file = StoragePathMacros.APP_CONFIG + "/CodeGlance.xml")
+            Storage(value = StoragePathMacros.WORKSPACE_FILE + "/CodeGlance.xml")
         )
 )
 class ConfigService : PersistentStateComponent<Config> {

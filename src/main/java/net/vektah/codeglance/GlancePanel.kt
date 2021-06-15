@@ -85,8 +85,8 @@ class GlancePanel(private val project: Project, fileEditor: FileEditor, private 
         }
         container.addComponentListener(componentListener)
 
-        documentListener = object : DocumentAdapter() {
-            override fun documentChanged(documentEvent: DocumentEvent?) {
+        documentListener = object : DocumentListener {
+            override fun documentChanged(event: DocumentEvent) {
                 updateImage()
             }
         }

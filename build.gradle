@@ -12,6 +12,13 @@ plugins {
     id "org.jetbrains.intellij" version "1.0"
 }
 
+intellij {
+    version 'IC-2020.3'
+//        plugins 'coverage'
+//        pluginName 'CodeGlance'
+    updateSinceUntilBuild = false
+}
+
 allprojects {
     apply plugin: 'java'
     apply plugin: 'kotlin'
@@ -23,7 +30,7 @@ allprojects {
     apply plugin: 'org.jetbrains.intellij'
 
     intellij {
-        version 'IC-2021.1'
+        version 'IC-2020.3'
 //        plugins 'coverage'
 //        pluginName 'CodeGlance'
         updateSinceUntilBuild = false

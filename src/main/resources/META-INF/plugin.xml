@@ -1,6 +1,6 @@
 <idea-plugin url="https://github.com/Vektah/CodeGlance">
 	<id>net.vektah.codeglance</id>
-	<name>CodeGlance</name>
+	<name>CodeGlance3</name>
 	<version>1.5.5</version>
 	<vendor email="adam@vektah.net" url="https://github.com/Vektah/CodeGlance">Vektah</vendor>
 
@@ -10,6 +10,10 @@
 	</description>
 
 	<change-notes><![CDATA[
+		<h3>1.5.5</h3>
+		<ul>
+			<li>update to 2020.3</li>
+		</ul>
 		<h3>1.5.4</h3>
 		<ul>
 			<li>Bugfix: Viewport position now calculates correctly for large files -@ru5k</li>

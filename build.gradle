@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+        maven { url 'https://dl.bintray.com/jetbrains/intellij-plugin-service' }
         mavenCentral()
     }
     dependencies {
@@ -9,7 +9,14 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.2.5"
+    id "org.jetbrains.intellij" version "0.6.5"
+}
+
+intellij {
+    version 'IC-2020.3'
+//        plugins 'coverage'
+//        pluginName 'CodeGlance'
+    updateSinceUntilBuild = false
 }
 
 allprojects {
@@ -21,10 +28,11 @@ allprojects {
     tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
     apply plugin: 'org.jetbrains.intellij'
+
     intellij {
-        version ideaVersion
-        plugins 'coverage'
-        pluginName 'CodeGlance'
+        version 'IC-2020.3'
+//        plugins 'coverage'
+//        pluginName 'CodeGlance'
         updateSinceUntilBuild = false
     }
 
@@ -47,6 +55,11 @@ dependencies {
     testCompile "org.testng:testng:6.8.5"
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.3'
+wrapper {
+    gradleVersion = '7.0.2'
 }
+
+runIde {
+    jvmArgs '-DmyProperty=value'
+}
+

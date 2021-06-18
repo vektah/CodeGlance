@@ -25,7 +25,9 @@
 
 package net.vektah.codeglance.config
 
+import com.intellij.openapi.components.ComponentManager
 import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.components.ServiceManager.getService
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurationException
 import org.jetbrains.annotations.Nls
@@ -35,9 +37,11 @@ import javax.swing.*
 class ConfigEntry : Configurable {
     private var form: ConfigForm? = null
     private val configService = ServiceManager.getService(ConfigService::class.java)
+
     private val config = configService.state!!
 
-    @Nls override fun getDisplayName(): String {
+    @Nls
+    override fun getDisplayName(): String {
         return "CodeGlance"
     }
 
@@ -52,7 +56,7 @@ class ConfigEntry : Configurable {
     }
 
     override fun isModified() = form != null &&
-            (config.pixelsPerLine != form!!.pixelsPerLine
+        (config.pixelsPerLine != form!!.pixelsPerLine
             || config.disabled != form!!.isDisabled
             || config.locked != form!!.isLocked
             || config.jumpOnMouseDown != form!!.jumpOnMouseDown()
@@ -93,7 +97,7 @@ class ConfigEntry : Configurable {
 
         form!!.pixelsPerLine = config.pixelsPerLine
         form!!.isDisabled = config.disabled
-        form!!.isLocked= config.locked
+        form!!.isLocked = config.locked
         form!!.setJumpOnMouseDown(config.jumpOnMouseDown)
         form!!.setPercentageBasedClick(config.percentageBasedClick)
         form!!.viewportColor = config.viewportColor

@@ -5,10 +5,10 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 import java.lang.ref.WeakReference
 
 @State(
-        name = "CodeGlance",
-        storages = arrayOf(
-            Storage(id = "other", file = StoragePathMacros.APP_CONFIG + "/CodeGlance.xml")
-        )
+        name = "CodeGlance3",
+        storages = [
+            Storage( "CodeGlance.xml")
+        ]
 )
 class ConfigService : PersistentStateComponent<Config> {
     private val observers : MutableList<WeakReference<() -> Unit>> = arrayListOf()
